@@ -307,10 +307,17 @@ if check_config(config, "data_indicators_function"):
                 for idx_qc in rule1.index:
                     boolean_warning = check_blocon(qc_ge=rule1.loc[idx_qc,"rule_ge"], 
                                                     qc_ex=rule1.loc[idx_qc,"except_sp"], 
+                                                    qc_in=rule1.loc[idx_qc,"include_sp"], 
                                                     qc_spc=rule1.loc[idx_qc,"antibiotic"].replace("_specimen",""), 
                                                     mi_sci=micro_data.loc[idx_mi,"mapped_sci"], 
                                                     mi_fam=micro_data.loc[idx_mi,"mapped_fam"], 
                                                     mi_spc=micro_data.loc[idx_mi,"mapped_spctype"])
+                    # boolean_warning = check_blocon(qc_ge=rule1.loc[idx_qc,"rule_ge"], 
+                    #                                 qc_ex=rule1.loc[idx_qc,"except_sp"], 
+                    #                                 qc_spc=rule1.loc[idx_qc,"antibiotic"].replace("_specimen",""), 
+                    #                                 mi_sci=micro_data.loc[idx_mi,"mapped_sci"], 
+                    #                                 mi_fam=micro_data.loc[idx_mi,"mapped_fam"], 
+                    #                                 mi_spc=micro_data.loc[idx_mi,"mapped_spctype"])
                     if boolean_warning is True: #If boolean_warning is True >>> do next process
                         micro_data.loc[idx_mi,"warning_indicator_1"] = "Possible contaminant" 
                         micro_data.loc[idx_mi,"priority_indicator_1"] = rule1.loc[idx_qc,"priority"]
@@ -468,53 +475,71 @@ if check_config(config, "data_indicators_function"):
                                     (micro_1["mapped_culture"]=="negative"),:] #nogrowth for blood
         micro_blood_pos_neg = pd.concat([micro_blood_neg,micro_blood], axis=0) #merging nogrowth + positive for blood
         #Exporting AnnexB_proportion_table_blood.csv
-        annex_blood = create_assign_annex_v2(micro_blood)
-        annex_blood = annex_blood.rename(index={"indicator_1":"blood_contamination", 
-                                                "indicator_2":"antibiotic_pathogen_combinations",
-                                                "indicator_3":"potential_errors"})
-        annex_csv = export_annexB(df = annex_blood, 
-                                nogrowth_status = nogrowth_status,
-                                df_blo_posneg = micro_blood_pos_neg, 
-                                df_blo_ast    = micro_blood_ast, 
-                                rule1  = rule1, 
-                                rule2  = rule2, 
-                                rule3a = rule3a, 
-                                rule3b = rule3b)
-        annex_csv.to_csv(o_tab_blo,index=False,header=True)
+        try:
+            annex_blood = create_assign_annex_v2(micro_blood)
+            annex_blood = annex_blood.rename(index={"indicator_1":"blood_contamination", 
+                                                    "indicator_2":"antibiotic_pathogen_combinations",
+                                                    "indicator_3":"potential_errors"})
+            annex_csv = export_annexB(df = annex_blood, 
+                                    nogrowth_status = nogrowth_status,
+                                    df_blo_posneg = micro_blood_pos_neg, 
+                                    df_blo_ast    = micro_blood_ast, 
+                                    rule1  = rule1, 
+                                    rule2  = rule2, 
+                                    rule3a = rule3a, 
+                                    rule3b = rule3b)
+            annex_csv.to_csv(o_tab_blo,index=False,header=True)
+        except:
+            pass
         #Exporting AnnexB_proportion_table_blood_bymonth.csv
-        micro_blo_bymonth = create_assign_annexB_bymonth(df = micro_blood, 
-                                                        df_blo_posneg = micro_blood_pos_neg, 
-                                                        df_blo_ast    = micro_blood_ast, 
-                                                        col_spcdate   = spcdate)
-        micro_blo_bymonth = export_annexB_bymonth(df = micro_blo_bymonth, nogrowth_status = nogrowth_status)
-        micro_blo_bymonth.to_csv(o_tab_blo_bymonth,index=True,header=True)
+        try:
+            micro_blo_bymonth = create_assign_annexB_bymonth(df = micro_blood, 
+                                                            df_blo_posneg = micro_blood_pos_neg, 
+                                                            df_blo_ast    = micro_blood_ast, 
+                                                            col_spcdate   = spcdate)
+            micro_blo_bymonth = export_annexB_bymonth(df = micro_blo_bymonth, nogrowth_status = nogrowth_status)
+            micro_blo_bymonth.to_csv(o_tab_blo_bymonth,index=True,header=True)
+        except:
+            pass
         #creating summary table for indicators
         #indicator_1
-        rule1_export_1 = create_summary_table_supp_pocon_v2(nogrowth_status,rule1_export,micro_data_append.loc[(micro_data_append["mapped_blood"]=="blood")&(micro_data_append["warning_indicator_1"]!=""),:],int_denominator=len(micro_blood_pos_neg))
-        rule1_export_1.to_excel(path+"ResultData/Supplementary_data_indicators_indicator1.xlsx",index=False,header=True)  
+        try:
+            rule1_export_1 = create_summary_table_supp_pocon_v2(nogrowth_status,rule1_export,micro_data_append.loc[(micro_data_append["mapped_blood"]=="blood")&(micro_data_append["warning_indicator_1"]!=""),:],int_denominator=len(micro_blood_pos_neg))
+            rule1_export_1.to_excel(path+"ResultData/Supplementary_data_indicators_indicator1.xlsx",index=False,header=True)
+        except:
+            pass
         #indicator_2
-        rule2_export_1 = create_summary_table_supp_poerr_v2(df_qc=rule2_export,df_mi=micro_data_append.loc[micro_data_append["mapped_blood"]=="blood"],int_denominator=len(micro_blood_ast), col_mi_drug="antibiotic_indicator_2")
-        rule2_export_2 = rule2_export_1.copy()
-        rule2_export_2["antibiotic"] = rule2_export_2["antibiotic"] + "-NS"
-        #indicator_2: Carbapenem-S and 3GC-NS
-        num_car_3gc = len(micro_data_append.loc[micro_data_append["car_3gc"]==1])
-        per_car_3gc = cal_perc_annex_v1(num_car_3gc,len(micro_blood_ast)) + " (" + str(num_car_3gc) + "/" + str(len(micro_blood_ast)) + ")"
-        df_car_3gc = pd.DataFrame([["Enterobacteriaceae","Carbapenem-S and 3GC-NS",per_car_3gc]], columns = rule2_export_1.columns)
-        #indicator_2: Fluoroquinolones-NS and 3GC-S
-        num_flu_3gc = len(micro_data_append.loc[micro_data_append["flu_3gc"]==1])
-        per_flu_3gc = cal_perc_annex_v1(num_flu_3gc,len(micro_blood_ast)) + " (" + str(num_flu_3gc) + "/" + str(len(micro_blood_ast)) + ")"
-        df_flu_3gc = pd.DataFrame([["Neisseria gonorrhoeae","Fluoroquinolones-NS and 3GC-S",per_flu_3gc]], columns = rule2_export_1.columns)
-        #indicator_2: merging
-        rule2_export_3 = pd.concat([rule2_export_2.loc[:3,:], df_car_3gc, rule2_export_2.loc[4:11,:], df_flu_3gc]).reset_index().drop(columns=["index"])
-        rule2_export_3["blood_samples"] = rule2_export_3["blood_samples"].replace("NA (0/0)","NA")
-        rule2_export_3.to_excel(path+"ResultData/Supplementary_data_indicators_indicator2.xlsx",index=False,header=True)
+        try:
+            rule2_export_1 = create_summary_table_supp_poerr_v2(df_qc=rule2_export,df_mi=micro_data_append.loc[micro_data_append["mapped_blood"]=="blood"],int_denominator=len(micro_blood_ast), col_mi_drug="antibiotic_indicator_2")
+            rule2_export_2 = rule2_export_1.copy()
+            rule2_export_2["antibiotic"] = rule2_export_2["antibiotic"] + "-NS"
+            #indicator_2: Carbapenem-S and 3GC-NS
+            num_car_3gc = len(micro_data_append.loc[micro_data_append["car_3gc"]==1])
+            per_car_3gc = cal_perc_annex_v1(num_car_3gc,len(micro_blood_ast)) + " (" + str(num_car_3gc) + "/" + str(len(micro_blood_ast)) + ")"
+            df_car_3gc = pd.DataFrame([["Enterobacteriaceae","Carbapenem-S and 3GC-NS",per_car_3gc]], columns = rule2_export_1.columns)
+            #indicator_2: Fluoroquinolones-NS and 3GC-S
+            num_flu_3gc = len(micro_data_append.loc[micro_data_append["flu_3gc"]==1])
+            per_flu_3gc = cal_perc_annex_v1(num_flu_3gc,len(micro_blood_ast)) + " (" + str(num_flu_3gc) + "/" + str(len(micro_blood_ast)) + ")"
+            df_flu_3gc = pd.DataFrame([["Neisseria gonorrhoeae","Fluoroquinolones-NS and 3GC-S",per_flu_3gc]], columns = rule2_export_1.columns)
+            #indicator_2: merging
+            rule2_export_3 = pd.concat([rule2_export_2.loc[:3,:], df_car_3gc, rule2_export_2.loc[4:11,:], df_flu_3gc]).reset_index().drop(columns=["index"])
+            rule2_export_3["blood_samples"] = rule2_export_3["blood_samples"].replace("NA (0/0)","NA")
+            rule2_export_3.to_excel(path+"ResultData/Supplementary_data_indicators_indicator2.xlsx",index=False,header=True)
+        except:
+            pass
         #indicator_3a and 3b
-        rule3a_export_1 = create_summary_table_supp_poerr_v2(df_qc=rule3a_export,df_mi=micro_data_append.loc[micro_data_append["mapped_blood"]=="blood"],int_denominator=len(micro_blood_ast), col_mi_drug="antibiotic_indicator_3a")
-        rule3a_export_1["blood_samples"] = rule3a_export_1["blood_samples"].replace("NA (0/0)","NA")
-        rule3a_export_1.to_excel(path+"ResultData/Supplementary_data_indicators_indicator3a.xlsx",index=False,header=True)
-        rule3b_export_1 = create_summary_table_supp_poerr_v2(df_qc=rule3b_export,df_mi=micro_data_append.loc[micro_data_append["mapped_blood"]=="blood"],int_denominator=len(micro_blood_ast), col_mi_drug="antibiotic_indicator_3b")
-        rule3b_export_1["blood_samples"] = rule3b_export_1["blood_samples"].replace("NA (0/0)","NA")
-        rule3b_export_1.to_excel(path+"ResultData/Supplementary_data_indicators_indicator3b.xlsx",index=False,header=True)
+        try:
+            rule3a_export_1 = create_summary_table_supp_poerr_v2(df_qc=rule3a_export,df_mi=micro_data_append.loc[micro_data_append["mapped_blood"]=="blood"],int_denominator=len(micro_blood_ast), col_mi_drug="antibiotic_indicator_3a")
+            rule3a_export_1["blood_samples"] = rule3a_export_1["blood_samples"].replace("NA (0/0)","NA")
+            rule3a_export_1.to_excel(path+"ResultData/Supplementary_data_indicators_indicator3a.xlsx",index=False,header=True)
+        except:
+            pass
+        try:
+            rule3b_export_1 = create_summary_table_supp_poerr_v2(df_qc=rule3b_export,df_mi=micro_data_append.loc[micro_data_append["mapped_blood"]=="blood"],int_denominator=len(micro_blood_ast), col_mi_drug="antibiotic_indicator_3b")
+            rule3b_export_1["blood_samples"] = rule3b_export_1["blood_samples"].replace("NA (0/0)","NA")
+            rule3b_export_1.to_excel(path+"ResultData/Supplementary_data_indicators_indicator3b.xlsx",index=False,header=True)
+        except:
+            pass
 
         #Deleting noused dataframes
         del [[micro_1, micro_blood_neg, annex_blood, annex_csv, micro_blo_bymonth, micro_blood_pos_neg, micro_blood_ast, rule1, rule2, rule3a, rule3b]]
@@ -578,7 +603,7 @@ if check_config(config, "amr_surveillance_function"):
                             dictionary = dict_micro, 
                             col_spcdate = spcdate, 
                             col_organism = organism)
-        #Deleting noused dataframes
+        #Deleting not used dataframes
         del [[micro_pos]]
         gc.collect()
         micro_pos = pd.DataFrame()

@@ -37,56 +37,56 @@ pagenumber_ava_annexA = ["38","39","40"] #annexA; 3 pages
 pagenumber_ava_annexB = ["41","42"] #annexB; 2 pages
 pagenumber_ava_other = ["43","44","45","46","47"] #complement; 6 pages
 
-#AMASS version 1.1
-e_coli       = "<i>Escherichia coli</i>"
-k_pneumoniae = "<i>Klebsiella pneumoniae</i>"
-p_aeruginosa = "<i>Pseudomonas aeruginosa</i>"
-s_aureus     = "<i>Staphylococcus aureus</i>"
-s_pneumoniae = "<i>Streptococcus pneumoniae</i>"
-aci_spp      = "<i>Acinetobacter</i> spp."
-ent_spp      = "<i>Enterococcus</i> spp."
-sal_spp      = "<i>Salmonella</i> spp."
+# #AMASS version 1.1
+# e_coli       = "<i>Escherichia coli</i>"
+# k_pneumoniae = "<i>Klebsiella pneumoniae</i>"
+# p_aeruginosa = "<i>Pseudomonas aeruginosa</i>"
+# s_aureus     = "<i>Staphylococcus aureus</i>"
+# s_pneumoniae = "<i>Streptococcus pneumoniae</i>"
+# aci_spp      = "<i>Acinetobacter</i> spp."
+# ent_spp      = "<i>Enterococcus</i> spp."
+# sal_spp      = "<i>Salmonella</i> spp."
 
-lst_org_format= [s_aureus, ent_spp, s_pneumoniae, sal_spp, e_coli, k_pneumoniae, p_aeruginosa, aci_spp]
-lst_org_rpt4 = ["<i>S. aureus</i>", 
-                "<i>Enterococcus</i> spp.", 
-                "<i>S. pneumoniae</i>", 
-                "<i>Salmonella</i> spp.", 
-                "<i>E. coli</i>", 
-                "<i>K. pneumoniae</i>", 
-                "<i>P. aeruginosa</i>", 
-                "<i>Acinetobacter</i> spp."]
-lst_org_rpt4_0 = ["Staphylococcus aureus", 
-                "Enterococcus spp.", 
-                "Streptococcus pneumoniae", 
-                "Salmonella spp.", 
-                "Escherichia coli", 
-                "Klebsiella pneumoniae", 
-                "Pseudomonas aeruginosa", 
-                "Acinetobacter spp."]
-lst_org_rpt5_0 = ["MRSA", 
-                "Vancomycin−NS "+lst_org_rpt4_0[1], 
-                "Penicillin−NS "+lst_org_rpt4_0[2], 
-                "Fluoroquinolone−NS "+lst_org_rpt4_0[3], 
-                "3GC−NS "+lst_org_rpt4_0[4], 
-                "Carbapenem−NS "+lst_org_rpt4_0[4], 
-                "3GC−NS "+lst_org_rpt4_0[5], 
-                "Carbapenem−NS "+lst_org_rpt4_0[5], 
-                "Carbapenem−NS "+lst_org_rpt4_0[6], 
-                "Carbapenem−NS "+lst_org_rpt4_0[7]]
-lst_org_full  = []
-lst_org_short = []
-for org in lst_org_format:
-    org = org.replace("<i>", "")
-    org = org.replace("</i>", "")
-    org_1 = org.split(" ")                #['Staphylococcus], [aureus']
-    lst_org_full.append(" ".join(org_1)) #['Staphylococcus aureus', ...]
+# lst_org_format= [s_aureus, ent_spp, s_pneumoniae, sal_spp, e_coli, k_pneumoniae, p_aeruginosa, aci_spp]
+# lst_org_rpt4 = ["<i>S. aureus</i>", 
+#                 "<i>Enterococcus</i> spp.", 
+#                 "<i>S. pneumoniae</i>", 
+#                 "<i>Salmonella</i> spp.", 
+#                 "<i>E. coli</i>", 
+#                 "<i>K. pneumoniae</i>", 
+#                 "<i>P. aeruginosa</i>", 
+#                 "<i>Acinetobacter</i> spp."]
+# lst_org_rpt4_0 = ["Staphylococcus aureus", 
+#                 "Enterococcus spp.", 
+#                 "Streptococcus pneumoniae", 
+#                 "Salmonella spp.", 
+#                 "Escherichia coli", 
+#                 "Klebsiella pneumoniae", 
+#                 "Pseudomonas aeruginosa", 
+#                 "Acinetobacter spp."]
+# lst_org_rpt5_0 = ["MRSA", 
+#                 "Vancomycin−NS "+lst_org_rpt4_0[1], 
+#                 "Penicillin−NS "+lst_org_rpt4_0[2], 
+#                 "Fluoroquinolone−NS "+lst_org_rpt4_0[3], 
+#                 "3GC−NS "+lst_org_rpt4_0[4], 
+#                 "Carbapenem−NS "+lst_org_rpt4_0[4], 
+#                 "3GC−NS "+lst_org_rpt4_0[5], 
+#                 "Carbapenem−NS "+lst_org_rpt4_0[5], 
+#                 "Carbapenem−NS "+lst_org_rpt4_0[6], 
+#                 "Carbapenem−NS "+lst_org_rpt4_0[7]]
+# lst_org_full  = []
+# lst_org_short = []
+# for org in lst_org_format:
+#     org = org.replace("<i>", "")
+#     org = org.replace("</i>", "")
+#     org_1 = org.split(" ")                #['Staphylococcus], [aureus']
+#     lst_org_full.append(" ".join(org_1)) #['Staphylococcus aureus', ...]
 
-    if 'spp' in org_1[1]:                #Staphylococcus spp
-        name = org_1[0][0:3]+"_spp"
-    else:                                #Staphylococcus aureus
-        name = org_1[0][0]+"_"+org_1[1]
-    lst_org_short.append(name.lower())  #['s_aureus', ...]
+#     if 'spp' in org_1[1]:                #Staphylococcus spp
+#         name = org_1[0][0:3]+"_spp"
+#     else:                                #Staphylococcus aureus
+#         name = org_1[0][0]+"_"+org_1[1]
+#     lst_org_short.append(name.lower())  #['s_aureus', ...]
 
 def check_config(df_config, str_process_name):
     #Checking process is either able for running or not
@@ -138,7 +138,8 @@ def prepare_section2_table_for_reportlab(df_org, df_pat, lst_org, checkpoint_sec
                 "organism_escherichia_coli":"Escherichia coli", 
                 "organism_klebsiella_pneumoniae":"Klebsiella pneumoniae", 
                 "organism_pseudomonas_aeruginosa":"Pseudomonas aeruginosa", 
-                "organism_acinetobacter_spp":"Acinetobacter spp."}
+                "organism_acinetobacter_spp":"Acinetobacter spp.", 
+                "organism_acinetobacter_baumannii":"Acinetobacter baumannii"}
     df_org = df_org.set_index("Organism").rename(d_org_core)
     df_pat = df_pat.set_index("Organism").rename(d_org_core)
     if checkpoint_sec2:
@@ -201,6 +202,18 @@ def prepare_section3_table_for_reportlab(df_pat, lst_org, checkpoint_sec3):
     lst_df = lst_col + lst_df
     return lst_df
 
+def correct_digit(df=pd.DataFrame(),df_col=[]):
+    df_new = df.copy().astype(str)
+    for idx in df.index:
+        for col in df_col:
+            if float(df.loc[idx,col]) < 0.05:
+                df_new.at[idx,col] = "0"
+            elif float(df.loc[idx,col]) >= 0.95:
+                df_new.at[idx,col] = str(int(round(df.loc[idx,col])))
+            else:
+                pass
+    return df_new
+
 def create_table_nons(raw_df, org_full, origin="", org_col="Organism", drug_col="Antibiotic",  ns_col="Non-susceptible(N)", total_col="Total(N)"):
     #Selecting rows by organism and parsing table for PDF
     #raw_df : raw dataframe is opened from "Report2_AMR_proportion_table.csv"
@@ -214,16 +227,16 @@ def create_table_nons(raw_df, org_full, origin="", org_col="Organism", drug_col=
     else: #section3
         sel_df = raw_df.loc[(raw_df[org_col]==org_full) & (raw_df['Infection_origin']==origin)].set_index(drug_col).fillna(0)
     sel_df["%"] = round(sel_df[ns_col]/sel_df[total_col]*100,1).fillna(0)
-
-    sel_df_1 = sel_df.copy().astype(str)
-    for idx in sel_df.index:
-        for col in ["lower95CI(%)*","upper95CI(%)*","%"]:
-            if float(sel_df.loc[idx,col]) < 0.05:
-                sel_df_1.at[idx,col] = "0"
-            elif float(sel_df.loc[idx,col]) >= 0.95:
-                sel_df_1.at[idx,col] = str(int(sel_df.loc[idx,col]))
-            else:
-                pass
+    sel_df_1 = correct_digit(df=sel_df,df_col=["lower95CI(%)*","upper95CI(%)*","%"])
+    # sel_df_1 = sel_df.copy().astype(str)
+    # for idx in sel_df.index:
+    #     for col in ["lower95CI(%)*","upper95CI(%)*","%"]:
+    #         if float(sel_df.loc[idx,col]) < 0.05:
+    #             sel_df_1.at[idx,col] = "0"
+    #         elif float(sel_df.loc[idx,col]) >= 0.95:
+    #             sel_df_1.at[idx,col] = str(int(round(sel_df.loc[idx,col])))
+    #         else:
+    #             pass
     sel_df_1["% NS (n)"] = sel_df_1["%"].astype(str) + "% (" + sel_df_1[ns_col].astype(str) + "/" + sel_df_1[total_col].astype(str) + ")"
     sel_df_1["95% CI"]  = sel_df_1["lower95CI(%)*"].astype(str) + "% - " + sel_df_1["upper95CI(%)*"].astype(str) + "%"
     sel_df_1 = sel_df_1.loc[:,["% NS (n)", "95% CI"]].reset_index().rename(columns={drug_col:'Antibiotic agent',"% NS (n)":"Proportion of\n NS isolates (n)"})
@@ -251,7 +264,7 @@ def create_graph_nons(raw_df, org_full, org_short, palette, drug_col, perc_col, 
         plt.figure(figsize=(6,4))
     if org_full == "Enterococcus spp.":
         plt.figure(figsize=(6,4))
-    elif org_full == "Streptococcus pneumoniae" or org_full == "Pseudomonas aeruginosa" or org_full == "Acinetobacter spp.":
+    elif org_full == "Streptococcus pneumoniae" or org_full == "Pseudomonas aeruginosa" or org_full == "Acinetobacter spp." or org_full == "Acinetobacter baumannii":
         plt.figure(figsize=(7,6))
     elif org_full == "Salmonella spp.":
         plt.figure(figsize=(8,7))
@@ -390,30 +403,32 @@ def create_table_perc_mortal_eachorigin(df,org_col,ori_col,mortal_col,total_col,
     df_amr = df.drop(columns=[ori_col]).groupby([org_col],sort=False).sum()
     df_amr.loc['Total:',:] = df_amr.sum()
     df_amr['perc_mortal'] = round((df_amr[mortal_col]/df_amr[total_col]*100),1).fillna(0)
-    df_amr_1 = df_amr.copy().astype(str)
-    for idx in df_amr.index:
-        for col in ["perc_mortal",mortal_col,total_col]:
-            if float(df_amr.loc[idx,col]) < 0.05:
-                df_amr_1.at[idx,col] = "0"
-            elif float(df_amr.loc[idx,col]) >= 0.95:
-                df_amr_1.at[idx,col] = str(int(df_amr.loc[idx,col]))
-            else:
-                pass
+    df_amr_1 = correct_digit(df=df_amr, df_col=["perc_mortal",mortal_col,total_col])
+    # df_amr_1 = df_amr.copy().astype(str)
+    # for idx in df_amr.index:
+    #     for col in ["perc_mortal",mortal_col,total_col]:
+    #         if float(df_amr.loc[idx,col]) < 0.05:
+    #             df_amr_1.at[idx,col] = "0"
+    #         elif float(df_amr.loc[idx,col]) >= 0.95:
+    #             df_amr_1.at[idx,col] = str(int(round(df_amr.loc[idx,col])))
+    #         else:
+    #             pass
     df_amr_1['perc_mortal_1'] = (df_amr_1['perc_mortal'] + '% (' + df_amr_1[mortal_col].astype(str) + '/' + df_amr_1[total_col].astype(str) + ')').replace('0% (0/0)','NA')
     return df_amr_1.loc[:,"perc_mortal_1"]
 
 def prepare_section6_mortality_table(df_amr, death_col="Number_of_deaths", total_col="Total_number_of_patients", lower_col="Mortality_lower_95ci", upper_col="Mortality_upper_95ci"):
     ##Preparing mortality table; page34-37
     df_amr["Mortality (n)"] = round(df_amr[death_col]/df_amr[total_col]*100,1).fillna(0)
-    df_amr_1 = df_amr.copy().astype(str)
-    for idx in df_amr.index:
-        for col in ["Mortality (n)", lower_col, upper_col]:
-            if float(df_amr.loc[idx,col]) < 0.05:
-                df_amr_1.at[idx,col] = "0"
-            elif float(df_amr.loc[idx,col]) >= 0.95:
-                df_amr_1.at[idx,col] = str(int(df_amr.loc[idx,col]))
-            else:
-                pass
+    df_amr_1 = correct_digit(df=df_amr, df_col=["Mortality (n)", lower_col, upper_col])
+    # df_amr_1 = df_amr.copy().astype(str)
+    # for idx in df_amr.index:
+    #     for col in ["Mortality (n)", lower_col, upper_col]:
+    #         if float(df_amr.loc[idx,col]) < 0.05:
+    #             df_amr_1.at[idx,col] = "0"
+    #         elif float(df_amr.loc[idx,col]) >= 0.95:
+    #             df_amr_1.at[idx,col] = str(int(round(df_amr.loc[idx,col])))
+    #         else:
+    #             pass
     df_amr_1["Mortality (n)"] = (df_amr_1["Mortality (n)"]+"% ("+df_amr_1[death_col].astype(str)+"/"+df_amr_1[total_col].astype(str)+")").replace(regex=["0% (0/0)"],value="NA")
     df_amr_1["95% CI"] = (df_amr_1[lower_col].astype(str)+'% - '+df_amr_1[upper_col].astype(str)+"%").replace(regex=["0.0% - 0.0%"],value="-")
     df_amr_1["Antibiotic"] = df_amr_1["Antibiotic"].replace(regex=["3GC-NS"], value="3GC-NS**").replace(regex=["3GC-S"], value="3GC-S***")
@@ -444,7 +459,7 @@ def create_graph_mortal_1(df, organism, origin, prefix, org_col="Organism", ori_
         plt.figure(figsize=(6.2,2.7))
     elif organism == "Pseudomonas aeruginosa":
         plt.figure(figsize=(6.2,2))
-    elif organism == "Acinetobacter spp.":
+    elif organism == "Acinetobacter spp." or organism == "Acinetobacter baumannii":
         plt.figure(figsize=(6.2,2))
     sns.barplot(data=df_1.loc[:,perc_col].to_frame().astype(int).T, palette=['darkorange','darkorange'],orient='h',capsize=.2)
     for drug in df_1.index:
@@ -584,34 +599,37 @@ def prepare_annexA_numpat_table_for_reportlab(df_pat, lst_org):
 
 def prepare_annexA_mortality_table_for_reportlab(df_mor, lst_org, death_col="Number_of_deaths", total_col="Total_number_of_patients", lower_col="Mortality_lower_95ci", upper_col="Mortality_upper_95ci"):
     df_mor["Mortality(%)"] = round(df_mor[death_col]/df_mor[total_col]*100,1).fillna(0)
-    df_mor_1 = df_mor.copy().astype(str)
+    # df_mor_1 = df_mor.copy().astype(str)
+    df_mor_1 = correct_digit(df=df_mor,df_col=["Mortality(%)",upper_col,lower_col])
     df_mor_1[["Mortality (n)","95% CI"]] = ""
-    for idx in df_mor.index:
-        mortal = ""
-        upper = ""
-        lower = ""
-        if float(df_mor_1.loc[idx,"Mortality(%)"]) < 0.05:
-            mortal = "0"
-        elif float(df_mor_1.loc[idx,"Mortality(%)"]) >= 0.95:
-            mortal = str(int(round(df_mor.loc[idx,"Mortality(%)"])))
-        else:
-            mortal = str(round(df_mor.loc[idx,"Mortality(%)"],1))
+    # for idx in df_mor.index:
+    #     mortal = ""
+    #     upper = ""
+    #     lower = ""
+        # if float(df_mor_1.loc[idx,"Mortality(%)"]) < 0.05:
+        #     mortal = "0"
+        # elif float(df_mor_1.loc[idx,"Mortality(%)"]) >= 0.95:
+        #     mortal = str(int(round(df_mor.loc[idx,"Mortality(%)"])))
+        # else:
+        #     mortal = str(round(df_mor.loc[idx,"Mortality(%)"],1))
             
-        if float(df_mor_1.loc[idx, upper_col]) < 0.05:
-            upper = "0"
-        elif float(df_mor_1.loc[idx,upper_col]) >= 0.95:
-            upper = str(int(round(df_mor.loc[idx,upper_col])))
-        else:
-            upper = str(round(df_mor.loc[idx,upper_col],1))
+        # if float(df_mor_1.loc[idx, upper_col]) < 0.05:
+        #     upper = "0"
+        # elif float(df_mor_1.loc[idx,upper_col]) >= 0.95:
+        #     upper = str(int(round(df_mor.loc[idx,upper_col])))
+        # else:
+        #     upper = str(round(df_mor.loc[idx,upper_col],1))
 
-        if float(df_mor_1.loc[idx,lower_col]) < 0.05:
-            lower = "0"
-        elif float(df_mor_1.loc[idx,lower_col]) >= 0.95:
-            lower = str(int(round(df_mor.loc[idx,lower_col])))
-        else:
-            lower = str(round(df_mor.loc[idx,lower_col],1))
-        df_mor_1.at[idx,"Mortality (n)"] = str(mortal)+"% ("+str(df_mor_1.loc[idx,death_col])+"/"+str(df_mor_1.loc[idx,total_col])+")"
-        df_mor_1.at[idx,'95% CI'] = str(lower)+'% - '+str(upper)+'%'
+        # if float(df_mor_1.loc[idx,lower_col]) < 0.05:
+        #     lower = "0"
+        # elif float(df_mor_1.loc[idx,lower_col]) >= 0.95:
+        #     lower = str(int(round(df_mor.loc[idx,lower_col])))
+        # else:
+        #     lower = str(round(df_mor.loc[idx,lower_col],1))
+        # df_mor_1.at[idx,"Mortality (n)"] = str(mortal)+"% ("+str(df_mor_1.loc[idx,death_col])+"/"+str(df_mor_1.loc[idx,total_col])+")"
+        # df_mor_1.at[idx,'95% CI'] = str(lower)+'% - '+str(upper)+'%'
+    df_mor_1["Mortality (n)"] = (df_mor_1["Mortality(%)"]+"% ("+df_mor_1[death_col].astype(str)+"/"+df_mor_1[total_col].astype(str)+")").replace(regex=["0% (0/0)"],value="NA")
+    df_mor_1['95% CI'] = (df_mor_1[lower_col].astype(str)+'% - '+df_mor_1[upper_col].astype(str)+"%").replace(regex=["0.0% - 0.0%"],value="-")
     df_mor_1 = df_mor_1.loc[:,["Organism","Mortality (n)","95% CI"]].replace("0% (0/0)","NA").replace("0% - 0%","-")
     df_mor_2 = pd.concat([lst_org,df_mor_1],axis=1).drop(columns=["Organism"]).rename(columns={"Organism_fmt":"Pathogens"}) #Adding orgaism_fmt to table
     return [list(df_mor_2.columns)] + df_mor_2.values.tolist()

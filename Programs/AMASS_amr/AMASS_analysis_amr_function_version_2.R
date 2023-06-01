@@ -7,6 +7,7 @@
 #### Dated changes ####
 # Created on 20th April 2022
 #----Sub-divided from AMASSplus released on 25th March 2021
+# Added rename_str_indf() on 04th September 2022 
 
 
 # Core function: to rename the variables ####
@@ -559,3 +560,13 @@ fun_clean_org <- function(rawDF, orgName){
   return (rawDF)
 }
 
+
+##Renaming string in dataframe
+#when check_str is True  : Acinetobacter spp. >>> Acinetobacter baumannii
+#when check_str is False : pass
+rename_str_indf <- function(df, df_col, check_str, new_str, ori_str){
+  if (check_str) {
+    df[df_col] <- data.frame(lapply(df[df_col],function(x){gsub(ori_str, new_str,x)}))
+  } else {}
+  return (df)
+}

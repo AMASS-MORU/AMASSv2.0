@@ -54,16 +54,17 @@ try:
                     except:
                         data_micro_raw = pd.read_csv("./microbiology_data.csv",encoding="windows-1252").fillna("")
                 try: #required columns are founded in microbiology_data
-                    data_micro_raw = data_micro_raw.loc[(data_micro_raw[hn]!="")&(data_micro_raw[spcdate]!="")&(data_micro_raw[spctype]!="")&(data_micro_raw[organism]!="")&(data_micro_raw[spcnum]!="")&(data_micro_raw[antibiotic]!="")&(data_micro_raw[astresult]!=""),:]
+                    data_micro_ast = data_micro_raw.loc[(data_micro_raw[hn]!="")&(data_micro_raw[spcdate]!="")&(data_micro_raw[spctype]!="")&(data_micro_raw[organism]!="")&(data_micro_raw[spcnum]!="")&(data_micro_raw[antibiotic]!="")&(data_micro_raw[astresult]!=""),:]
                     #Creating new column 'combine' that containing hn;spcdate;spctype;organism
-                    data_micro_raw['combine'] = data_micro_raw[hn].astype(str)+';'+data_micro_raw[spcdate].astype(str)+';'+ \
-                                        data_micro_raw[spctype].astype(str)+';'+data_micro_raw[organism].astype(str)+';'+ \
-                                        data_micro_raw[spcnum].astype(str)
-                    data_micro_1 = deduplicate(data_micro_raw).reset_index().loc[:,[hn,spcdate,spctype,organism,spcnum,'combine']]
-                    lst_ava_drug = pd.unique(data_micro_raw.loc[:,antibiotic])
-                    data_micro_amass = create_blank_df_widefmt(data_micro_1,lst_ava_drug).set_index("combine")
-                    data_micro_final = fill_ast_to_rawmicro(data_micro_amass, data_micro_raw, antibiotic, astresult).reset_index().drop(columns=["combine"]).fillna("")
+                    data_micro_ast['combine'] = data_micro_ast[hn].astype(str)+';'+data_micro_ast[spcdate].astype(str)+';'+ \
+                                        data_micro_ast[spctype].astype(str)+';'+data_micro_ast[organism].astype(str)+';'+ \
+                                        data_micro_ast[spcnum].astype(str)
+                    data_micro_dedup = deduplicate(data_micro_ast).reset_index().loc[:,[hn,spcdate,spctype,organism,spcnum,'combine']]
+                    lst_ava_drug = pd.unique(data_micro_ast.loc[:,antibiotic])
+                    data_micro_amass = create_blank_df_widefmt(data_micro_dedup,lst_ava_drug).set_index("combine")
+                    data_micro_amass_1 = fill_ast_to_rawmicro(data_micro_amass, data_micro_ast, antibiotic, astresult).reset_index().drop(columns=["combine"]).fillna("")
                     print ("Writing microbiology_data.xlsx (wide format)")
+                    data_micro_final=pd.concat([data_micro_amass_1,data_micro_raw.loc[data_micro_raw[astresult]==""]])
                     data_micro_final.to_excel('./microbiology_data_reformatted.xlsx',index=False) #Exporting microbiology_data
                 except Exception as e:
                     logger.exception(e) # Will send the errors to the file

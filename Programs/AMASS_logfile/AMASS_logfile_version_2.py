@@ -40,8 +40,8 @@ ast_i = path + "ResultData/logfile_ast.xlsx"
 gen_i = path + "ResultData/logfile_gender.xlsx"
 age_i = path + "ResultData/logfile_age.xlsx"
 dis_i = path + "ResultData/logfile_discharge.xlsx"
-var_mi_i = path + "Variables/variables_micro.csv"
-var_ho_i = path + "Variables/variables_hosp.csv"
+var_mi_i = path + "Variables/variables_micro.xlsx"
+var_ho_i = path + "Variables/variables_hosp.xlsx"
 
 
 try:
@@ -111,7 +111,7 @@ if checkpoint(dict_i):
             else:
                 pass
             org_A.at[idx,"Organism"] = prepare_unicode(org_A.loc[idx,"Organism"])
-        org_A = org_A.drop(columns=["user_name"]).rename(columns={"amass_name":"Data values of variable \"organism\"\nin AMASS, which are mainly used for\nthe main report","Organism":"Data values of variable\nrecorded for \"organism\" in your\nmicrobiology data file", "Frequency":"Number of observations"})
+        org_A = org_A.drop(columns=["user_name"]).rename(columns={"amass_name":"Data values of variable \"organism\"\nin AMASS, which are mainly used for\nthe main report","Organism":"Data values of variable\nrecorded for \"organism\" in your\nmicrobiology data file", "Frequency":"Number of\nobservations"})
         marked_org_A = marked_idx(org_A)
         org_A_col = [list(org_A.columns)]
 
@@ -122,7 +122,7 @@ if checkpoint(dict_i):
             else:
                 pass
             org_B.at[idx,"Organism"] = prepare_unicode(org_B.loc[idx,"Organism"])
-        org_B = org_B.drop(columns=["user_name"]).rename(columns={"amass_name":"Optional: Data values of variable\n\"organism\" in AMASS, which are \nmainly used for the annex", "Organism":"Data values of the variable\nrecorded for \"organism\" in your\nmicrobiology data file", "Frequency":"Number of observations"})
+        org_B = org_B.drop(columns=["user_name"]).rename(columns={"amass_name":"Optional: Data values of variable\n\"organism\" in AMASS, which are \nmainly used for the annex", "Organism":"Data values of the variable\nrecorded for \"organism\" in your\nmicrobiology data file", "Frequency":"Number of\nobservations"})
         marked_org_B = marked_idx(org_B)
         org_B_col = [list(org_B.columns)]
     except Exception as e:
@@ -148,8 +148,8 @@ if checkpoint(dict_i):
             spc_merge.at[idx,"Specimen"] = prepare_unicode(spc_merge.loc[idx,"Specimen"])
         spc_merge = spc_merge.drop(columns=["user_name"]).fillna("").rename(columns={"amass_name":"Data values of variable used\nfor \"specimen_type\" in AMASS",
                                                 "Specimen":"Data values of variable\nrecorded for \"specimen_type\" in your\nmicrobiology data file", 
-                                                "Frequency":"Number of observations"})
-        marked_spc = marked_idx(spc_merge,row_per_page=14)
+                                                "Frequency":"Number of\nobservations"})
+        marked_spc = marked_idx(spc_merge)
         spc_col = [list(spc_merge.columns)]
     except Exception as e:
         logger.exception(e)
@@ -222,7 +222,7 @@ if checkpoint(dict_hosp_i):
             gen_merge.at[idx,"Gender"] = prepare_unicode(gen_merge.loc[idx,"Gender"])
         gen_merge = gen_merge.drop(columns=["user_name"]).fillna("").rename(columns={"amass_name":"Data values of variable\n used for \"gender\" described\nin AMASS",
                                                         "Gender":"Data values of variable\n recorded for \"gender\" in your\nhospital admission data file", 
-                                                        "Frequency":"Number of observations"})
+                                                        "Frequency":"Number of\nobservations"})
         gen_col = [list(gen_merge.columns)]
         gen_1 = gen_merge.values.tolist()
         gen_1 = gen_col + gen_1
@@ -264,7 +264,7 @@ if checkpoint(dict_hosp_i):
         age_raw["Frequency"] = age_raw["Frequency"].fillna(0).astype(int).astype(str)
         age_merge = age_raw.copy().loc[:,["Age_cat","Age","Frequency"]].fillna("").rename(columns={"Age_cat":"Data values of variable\n used for \"age\" described\nin AMASS",
                                                                                             "Age":"Data values of variable\nrecorded for \"age\" in your\nhospital admission data file", 
-                                                                                            "Frequency":"Number of observations"})
+                                                                                            "Frequency":"Number of\nobservations"})
         age_col = [list(age_merge.columns)]
         marked_age = marked_idx(age_merge)
     except Exception as e:
@@ -286,7 +286,7 @@ if checkpoint(dict_hosp_i):
             dis_merge.at[idx,"Discharge status"] = prepare_unicode(dis_merge.loc[idx,"Discharge status"])
         dis_merge = dis_merge.drop(columns=["user_name"]).fillna("").rename(columns={"amass_name":"Data values of variable\nname used for \"discharge status\"\ndescribed in AMASS",
                                                         "Discharge status":"Data values of variable\nname recorded for \"discharge status\"\nin your hospital admission data file", 
-                                                        "Frequency":"Number of observations"})
+                                                        "Frequency":"Number of\nobservations"})
         dis_col = [list(dis_merge.columns)]
         marked_dis = marked_idx(dis_merge)
     except Exception as e:
@@ -299,6 +299,7 @@ if checkpoint(var_mi_i): #TS7
         try:
             var_mi_raw = pd.read_excel(var_mi_i).rename(columns={"variables_micro":"Variable names used in your microbiology data file"})
         except:
+            var_mi_i = path+"Variables/variables_micro.csv"
             var_mi_raw = pd.read_csv(var_mi_i,encoding='windows-1252').rename(columns={"variables_micro":"Variable names used in your microbiology data file"})
         var_mi_col = [list(var_mi_raw.columns)]
         marked_var_mi = marked_idx(var_mi_raw)
@@ -311,6 +312,7 @@ if checkpoint(var_ho_i): #TS8
         try:
             var_ho_raw = pd.read_excel(var_ho_i).rename(columns={"variables_hosp":"Variable names used in your hospital admission data file"})
         except:
+            var_ho_i = path+"Variables/variables_hosp.csv"
             var_ho_raw = pd.read_csv(var_ho_i,encoding='windows-1252').rename(columns={"variables_hosp":"Variable names used in your hospital admission data file"})
         var_ho_col = [list(var_ho_raw.columns)]
         marked_var_ho = marked_idx(var_ho_raw)

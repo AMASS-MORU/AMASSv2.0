@@ -23,6 +23,19 @@
 #Updated on 27th June 2022
 #----[Section 6]Edited rule for 3GC-NS and 3GC-S including tested and no tested 3GC results (E. coli and K. pneumoniae)
 
+#Updated on 17th September 2022
+#---[All sections]Added process for selecting whether Acinetobacter spp. or A. baumannii
+#---[Section 6]Added exported file Report6_mortality_byorganism.csv
+
+#Updated on 23rd September 2022
+#---[Preprocess]Changed exported variables from csv to xlsx (to avoid unicode and corresponding content in data verification file)
+
+#Updated on 4th October 2022
+#---[Section 1] Added patient-days steps
+#---[Preprocess] Changed "variable_organism" to "acinetobacter_spp_or_baumannii"
+
+#Updated on 07th November 2022
+#---[Section 4-5] Edited renaming process for df4_2, df5_2, and df5_4 before exportation
 
 #### PART1 : Importing functions ####
 # Clean working environment
@@ -140,10 +153,12 @@ for (i in 1:nrow(hospdict)){
 # Export the list of variables
 ls_micro <- as.data.frame(colnames(MicroData))
 names(ls_micro) <- "variables_micro"
-write.csv(ls_micro, "./Variables/variables_micro.csv", row.names = FALSE)
+write_xlsx(ls_micro, "./Variables/variables_micro.xlsx")
+#write.csv(ls_micro, "./Variables/variables_micro.csv", row.names = FALSE)
 ls_hosp <- as.data.frame(colnames(HospData))
 names(ls_hosp) <- "variables_hosp"
-write.csv(ls_hosp, "./Variables/variables_hosp.csv", row.names = FALSE)
+write_xlsx(ls_hosp, "./Variables/variables_hosp.xlsx")
+#write.csv(ls_hosp, "./Variables/variables_hosp.csv", row.names = FALSE)
 
 # Combining the two data dictionaries
 microdict1 <- as.data.frame(microdict[2:nrow(microdict),1:2])
@@ -155,7 +170,18 @@ if (exists("hospdict")=="TRUE"){
 }else{datadict <- microdict1}
 
 datadict_plus <- datadict
-datadict$amass[grep("organism_acinetobacter",datadict$amass)] <- "organism_acinetobacter_spp"
+check_a_baumanii = FALSE
+if (sum(str_detect(datadict$amass, 'acinetobacter_spp_or_baumannii')) > 0) {
+  if (datadict[datadict$amass=="acinetobacter_spp_or_baumannii","hosp"] == "organism_acinetobacter_baumannii"){
+    check_a_baumanii = TRUE
+  }else{
+    datadict$amass[grep("organism_acinetobacter",datadict$amass)] <- "organism_acinetobacter_spp"
+  }
+} else {
+  datadict$amass[grep("organism_acinetobacter",datadict$amass)] <- "organism_acinetobacter_spp"
+}
+
+#datadict$amass[grep("organism_acinetobacter",datadict$amass)] <- "organism_acinetobacter_spp"
 datadict$amass[grep("organism_enterococcus",datadict$amass)] <- "organism_enterococcus_spp"
 datadict$amass[grep("organism_salmonella",datadict$amass)] <- "organism_salmonella_spp"
 
@@ -286,9 +312,18 @@ max_date_data_include_fmt <- format(max_date_data_include, datefmt_text)
 MicroData2_2 <- MicroData2
 nrow(MicroData2_2)
 # Give numeric labels to the organisms
-searchString_org <- c("organism_staphylococcus_aureus", "organism_enterococcus_spp", "organism_escherichia_coli",
-                      "organism_klebsiella_pneumoniae", "organism_pseudomonas_aeruginosa", "organism_acinetobacter_spp",
-                      "organism_streptococcus_pneumoniae", "organism_salmonella_spp", "organism_no_growth")
+if (check_a_baumanii) {
+  searchString_org <- c("organism_staphylococcus_aureus", "organism_enterococcus_spp", "organism_escherichia_coli",
+                        "organism_klebsiella_pneumoniae", "organism_pseudomonas_aeruginosa", "organism_acinetobacter_baumannii",
+                        "organism_streptococcus_pneumoniae", "organism_salmonella_spp", "organism_no_growth")
+} else {
+  searchString_org <- c("organism_staphylococcus_aureus", "organism_enterococcus_spp", "organism_escherichia_coli",
+                        "organism_klebsiella_pneumoniae", "organism_pseudomonas_aeruginosa", "organism_acinetobacter_spp",
+                        "organism_streptococcus_pneumoniae", "organism_salmonella_spp", "organism_no_growth")
+}
+#searchString_org <- c("organism_staphylococcus_aureus", "organism_enterococcus_spp", "organism_escherichia_coli",
+#                      "organism_klebsiella_pneumoniae", "organism_pseudomonas_aeruginosa", "organism_acinetobacter_spp",
+#                      "organism_streptococcus_pneumoniae", "organism_salmonella_spp", "organism_no_growth")
 category_org <- c(1,2,3,
                   4,5,6,
                   7,8,9)
@@ -327,7 +362,7 @@ ASTelements <- c("Amikacin","Amoxicillin","Amoxicillin_and_clavulanic_acid","Amp
                  "Daptomycin","Doripenem","Doxycycline","Ertapenem","Erythromycin","Fosfomycin",
                  "Fusidic_acid","Gentamicin","Imipenem","Levofloxacin","Linezolid","Meropenem","Methicillin","Minocycline",
                  "Moxifloxacin","Nalidixic_acid","Netilmicin","Nitrofurantoin","Oxacillin","Penicillin_G","Piperacillin_and_tazobactam",
-                 "Polymyxin_B","Rifampin","Streptomycin","Teicoplanin","Telavancin","Tetracycline","Ticarcillin_and_clavulanic_acid","Tigecycline","Tobramycin","Trimethoprim","Sulfamethoxazole_and_trimethoprim","Vancomycin")
+                 "Polymyxin_B","Rifampin","Streptomycin","Sulfamethoxazole_and_trimethoprim","Teicoplanin","Telavancin","Tetracycline","Ticarcillin_and_clavulanic_acid","Tigecycline","Tobramycin","Trimethoprim","Vancomycin")
 
 RISASTelements <- paste("RIS", ASTelements, sep="")
 MicroData3 <- cbind(MicroData2_2, setNames(lapply(RISASTelements, function(x) x=NA), RISASTelements))
@@ -1710,15 +1745,16 @@ if(checkpoint_hosp_adm_date_ava=="yes" & ("date_of_admission" %in% names(MicroDa
 }else{
   HospMicroData_all <- HospMicroData_all
 }
-### A new data frame for admission date, discharge date, and specimen date
+#### A new data frame for admission date, discharge date, and specimen date
 HospMicroData_all_3 <- data.frame(HospMicroData_all$hn, HospMicroData_all$DateAdm, HospMicroData_all$DateSpc, HospMicroData_all$specimen_collection_date)
 names(HospMicroData_all_3) <- c("hn", "DateAdm", "DateSpc", "spcdate")
-### Calculate the number of days in hospital from admission to blood collected
+#### Calculate the number of days in hospital from admission to blood collected
 HospMicroData_all_3$diff_adm_spc <- (HospMicroData_all_3$DateSpc-HospMicroData_all_3$DateAdm)+1
-### [Report 5] Total number of blood specimens collected at admission
+#### [Report 5] Total number of blood specimens collected at admission
 num_blood_at_admission <- length(which(HospMicroData_all_3$diff_adm_spc<=2))
-### [Report 5] Total number of blood specimens collected after 2 days of hospital stay
+#### [Report 5] Total number of blood specimens collected after 2 days of hospital stay
 num_blood_after_2days <- length(which(HospMicroData_all_3$diff_adm_spc>=2))
+
 ### Keep only the first blood specimen within the admission (de-duplicated by hn and DateAdm)
 HospMicroData_all_3 <- HospMicroData_all_3[which(HospMicroData_all_3$diff_adm_spc>0),]
 HospMicroData_all_3$type <- ifelse(HospMicroData_all_3$diff_adm_spc>2,1,0) #1=HO; 0=CO
@@ -1951,6 +1987,45 @@ total_deaths_ho = crf_sa_ho + crf_es_ho + crf_sp_ho +
 
 totalpercent_deaths_co = round((total_deaths_co/Rpt3_pg2_totalco)*100,0)
 totalpercent_deaths_ho = round((total_deaths_ho/Rpt3_pg2_totalho)*100,0)
+
+##Patient-days ####
+num_patientdays <- "NA"
+num_patientdays_blood_his <- "NA"
+if (checkpoint_hosp_adm_data_ava=="yes"){
+  ##Selecting records with both admission and discharge dates are available
+  patient_days <- HospData
+  patient_days$missing_adm <- ifelse(is.na(patient_days$date_of_admission)==TRUE, 1, 0)
+  patient_days$missing_dis <- ifelse(is.na(patient_days$date_of_discharge)==TRUE, 1, 0)
+  patient_days_sel <- patient_days[which(patient_days$missing_adm==0 & patient_days$missing_dis==0),]
+  ######## Admission date
+  patient_days_sel <- fun_datevariable(patient_days_sel, patient_days_sel$date_of_admission)
+  colnames(patient_days_sel)[ncol(patient_days_sel)] <- "admdate2"
+  patient_days_sel$DateAdm <- multidate(patient_days_sel$admdate2)
+  ### For when the date variable is in character and numeric format of excel i.e. xxxx
+  if (sum(is.na(patient_days_sel$DateAdm)==TRUE)==nrow(patient_days_sel)){
+    patient_days_sel$admdate2 <- as.numeric(patient_days_sel$date_of_admission)
+    patient_days_sel$DateAdm <- as.Date(patient_days_sel$admdate2, origin="1899-12-30")
+  }else{}
+  ######## Discharge date
+  patient_days_sel <- fun_datevariable(patient_days_sel, patient_days_sel$date_of_discharge)
+  colnames(patient_days_sel)[ncol(patient_days_sel)] <- "disdate2"
+  patient_days_sel$DateDis <- multidate(patient_days_sel$disdate2)
+  ### For when the date variable is in character and numeric format of excel i.e. xxxx
+  if (sum(is.na(patient_days_sel$DateDis)==TRUE)==nrow(patient_days_sel)){
+    patient_days_sel$disdate2 <- as.numeric(patient_days_sel$date_of_discharge)
+    patient_days_sel$DateDis <- as.Date(patient_days_sel$disdate2, origin="1899-12-30")
+  }else{}
+  ##Calculating admission-days
+  patient_days_sel$admission_day     <- (patient_days_sel$DateDis-patient_days_sel$DateAdm)+1 #total days
+  patient_days_sel$admission_day_bsi <- (patient_days_sel$DateDis-patient_days_sel$DateAdm)+1-2 #his-bsi days
+  patient_days_sel$admission_check   <- ifelse(patient_days_sel$admission_day>0,1,0) #checking whether his-bsi (1) or not (0)
+  patient_days_sel$admission_check_bsi <- ifelse(patient_days_sel$admission_day_bsi>0,1,0) #checking whether his-bsi (1) or not (0)
+
+  num_patientdays <- sum(patient_days_sel[which(patient_days_sel$admission_check==1),"admission_day"])
+  num_patientdays_blood_his <- sum(patient_days_sel[which(patient_days_sel$admission_check_bsi==1),"admission_day_bsi"])
+} else {}
+
+
 
 
 ## AMASSplus part ####
@@ -2226,15 +2301,18 @@ checkpoint7_Report7 = checkpoint_hosp_adm_data_ava
 Type_of_data_file <- c("microbiology_data", "microbiology_data", "microbiology_data",
                        "microbiology_data", "microbiology_data", "microbiology_data",
                        "microbiology_data", "microbiology_data", "microbiology_data",
-                       "hospital_admission_data", "hospital_admission_data", "hospital_admission_data")
+                       "hospital_admission_data", "hospital_admission_data", "hospital_admission_data", 
+                       "hospital_admission_data", "hospital_admission_data")
 Parameters <- c("Hospital_name", "Country", "Contact_person", 
                 "Contact_address", "Contact_email", "notes_on_the_cover",
                 "Number_of_records", "Minimum_date", "Maximum_date",
-                "Number_of_records", "Minimum_date", "Maximum_date")
+                "Number_of_records", "Minimum_date", "Maximum_date", 
+                "Patient_days", "Patient_days_his")
 Values <- c(hospital_name, country, contact_person, 
             contact_address, contact_email, notes_on_the_cover,
             num_micro_data, min_rawmicro_spcdate, max_rawmicro_spcdate, 
-            num_hosp_data, min_rawhos_admdate, max_rawhos_admdate)
+            num_hosp_data, min_rawhos_admdate, max_rawhos_admdate, 
+            num_patientdays, num_patientdays_blood_his)
 write.csv(data.frame(Type_of_data_file, Parameters, Values), file="./ResultData/Report1_page3_results.csv", row.names=FALSE)
 #Report2_page5_results.csv
 Type_of_data_file <- c("microbiology_data", "microbiology_data", "microbiology_data",
@@ -2312,51 +2390,179 @@ if (checkpoint_hosp_adm_data_ava=="yes"){
 }
 
 # Aggregated data to be exported in csv: Report 2 ####
-write.csv(exp_rpt2_1(MicroData_bsi), file="./ResultData/Report2_page6_counts_by_organism.csv", row.names=FALSE)
-write.csv(exp_rpt2_2(blood_dedup_sa,blood_dedup_es,blood_dedup_sp,blood_dedup_ss,blood_dedup_ec,blood_dedup_kp,blood_dedup_pa,blood_dedup_as),
+df2_1 <- exp_rpt2_1(MicroData_bsi)
+write.csv(x   =rename_str_indf(df=df2_1, check_str=check_a_baumanii, df_col=-2, new_str="organism_acinetobacter_baumannii", ori_str="organism_acinetobacter_spp"), 
+          file="./ResultData/Report2_page6_counts_by_organism.csv", row.names=FALSE)
+df2_2 <- exp_rpt2_2(blood_dedup_sa,blood_dedup_es,blood_dedup_sp,blood_dedup_ss,blood_dedup_ec,blood_dedup_kp,blood_dedup_pa,blood_dedup_as)
+write.csv(x   =rename_str_indf(df=df2_2,check_str=check_a_baumanii, df_col=-2, new_str="Acinetobacter baumannii", ori_str="Acinetobacter spp."), 
           file="./ResultData/Report2_page6_patients_under_this_surveillance_by_organism.csv", row.names=FALSE)
 ## Tables in Report 2
-write.csv(exp_rpt2_3(isoRep_blood_stapha_graph,isoRep_blood_enterococcus_graph,
-                     isoRep_blood_streptopneu_graph,isoRep_blood_salmonella_graph,
-                     isoRep_blood_ecoli_graph,isoRep_blood_klebp_graph,
-                     isoRep_blood_pseudoa_graph,isoRep_blood_acine_graph), 
+df2_3 <- exp_rpt2_3(isoRep_blood_stapha_graph,isoRep_blood_enterococcus_graph,
+                    isoRep_blood_streptopneu_graph,isoRep_blood_salmonella_graph,
+                    isoRep_blood_ecoli_graph,isoRep_blood_klebp_graph,
+                    isoRep_blood_pseudoa_graph,isoRep_blood_acine_graph)
+write.csv(x   =rename_str_indf(df=df2_3,check_str=check_a_baumanii, df_col=-2, new_str="Acinetobacter baumannii", ori_str="Acinetobacter spp."), 
           file="./ResultData/Report2_AMR_proportion_table.csv", row.names=FALSE)
+#write.csv(exp_rpt2_1(MicroData_bsi), file="./ResultData/Report2_page6_counts_by_organism.csv", row.names=FALSE)
+#write.csv(exp_rpt2_2(blood_dedup_sa,blood_dedup_es,blood_dedup_sp,blood_dedup_ss,blood_dedup_ec,blood_dedup_kp,blood_dedup_pa,blood_dedup_as),
+#          file="./ResultData/Report2_page6_patients_under_this_surveillance_by_organism.csv", row.names=FALSE)
+## Tables in Report 2
+#write.csv(exp_rpt2_3(isoRep_blood_stapha_graph,isoRep_blood_enterococcus_graph,
+#                     isoRep_blood_streptopneu_graph,isoRep_blood_salmonella_graph,
+#                     isoRep_blood_ecoli_graph,isoRep_blood_klebp_graph,
+#                     isoRep_blood_pseudoa_graph,isoRep_blood_acine_graph), 
+#          file="./ResultData/Report2_AMR_proportion_table.csv", row.names=FALSE)
 
 # Aggregated data to be exported in csv: Report 3 ####
-write.csv(exp_rpt3_1(blood_dedup_sa,blood_dedup_es,blood_dedup_sp,blood_dedup_ss,blood_dedup_ec,blood_dedup_kp,blood_dedup_pa,blood_dedup_as,
-                     merged_blood_dedup_sa,merged_blood_dedup_es,merged_blood_dedup_sp,merged_blood_dedup_ss,
-                     merged_blood_dedup_ec,merged_blood_dedup_kp,merged_blood_dedup_pa,merged_blood_dedup_as), 
+df3_1 <- exp_rpt3_1(blood_dedup_sa,blood_dedup_es,blood_dedup_sp,blood_dedup_ss,blood_dedup_ec,blood_dedup_kp,blood_dedup_pa,blood_dedup_as,
+                    merged_blood_dedup_sa,merged_blood_dedup_es,merged_blood_dedup_sp,merged_blood_dedup_ss,
+                    merged_blood_dedup_ec,merged_blood_dedup_kp,merged_blood_dedup_pa,merged_blood_dedup_as)
+write.csv(x   =rename_str_indf(df=df3_1, check_str=check_a_baumanii,  df_col=-2, new_str="Acinetobacter baumannii", ori_str="Acinetobacter spp."), 
           file="./ResultData/Report3_page13_counts_by_origin.csv", row.names=FALSE)
+#write.csv(exp_rpt3_1(blood_dedup_sa,blood_dedup_es,blood_dedup_sp,blood_dedup_ss,blood_dedup_ec,blood_dedup_kp,blood_dedup_pa,blood_dedup_as,
+#                     merged_blood_dedup_sa,merged_blood_dedup_es,merged_blood_dedup_sp,merged_blood_dedup_ss,
+#                     merged_blood_dedup_ec,merged_blood_dedup_kp,merged_blood_dedup_pa,merged_blood_dedup_as), 
+#          file="./ResultData/Report3_page13_counts_by_origin.csv", row.names=FALSE)
+
 ## Tables in Report 3
 if (checkpoint2_Report3=="yes"){
-  write.csv(exp_rpt3_2(co_extRep_blood_stapha_graph,co_extRep_blood_enterococcus_graph,co_extRep_blood_streptopneu_graph,co_extRep_blood_salmonella_graph,
-                       co_extRep_blood_ecoli_graph,co_extRep_blood_klebp_graph,co_extRep_blood_pseudoa_graph,co_extRep_blood_acines_graph,
-                       ho_extRep_blood_stapha_graph,ho_extRep_blood_enterococcus_graph,ho_extRep_blood_streptopneu_graph,ho_extRep_blood_salmonella_graph,
-                       ho_extRep_blood_ecoli_graph,ho_extRep_blood_klebp_graph,ho_extRep_blood_pseudoa_graph,ho_extRep_blood_acines_graph), 
+  df3_2 <- exp_rpt3_2(co_extRep_blood_stapha_graph,co_extRep_blood_enterococcus_graph,co_extRep_blood_streptopneu_graph,co_extRep_blood_salmonella_graph,
+                      co_extRep_blood_ecoli_graph,co_extRep_blood_klebp_graph,co_extRep_blood_pseudoa_graph,co_extRep_blood_acines_graph,
+                      ho_extRep_blood_stapha_graph,ho_extRep_blood_enterococcus_graph,ho_extRep_blood_streptopneu_graph,ho_extRep_blood_salmonella_graph,
+                      ho_extRep_blood_ecoli_graph,ho_extRep_blood_klebp_graph,ho_extRep_blood_pseudoa_graph,ho_extRep_blood_acines_graph)
+  write.csv(x   =rename_str_indf(df=df3_2, check_str=check_a_baumanii, df_col=-2, new_str="Acinetobacter baumannii", ori_str="Acinetobacter spp."), 
             file="./ResultData/Report3_table.csv", row.names=FALSE)
+#  write.csv(exp_rpt3_2(co_extRep_blood_stapha_graph,co_extRep_blood_enterococcus_graph,co_extRep_blood_streptopneu_graph,co_extRep_blood_salmonella_graph,
+#                       co_extRep_blood_ecoli_graph,co_extRep_blood_klebp_graph,co_extRep_blood_pseudoa_graph,co_extRep_blood_acines_graph,
+#                       ho_extRep_blood_stapha_graph,ho_extRep_blood_enterococcus_graph,ho_extRep_blood_streptopneu_graph,ho_extRep_blood_salmonella_graph,
+#                       ho_extRep_blood_ecoli_graph,ho_extRep_blood_klebp_graph,ho_extRep_blood_pseudoa_graph,ho_extRep_blood_acines_graph), 
+#            file="./ResultData/Report3_table.csv", row.names=FALSE)
 }else{}
 
 # Aggregated data to be exported in csv: Report 4 ####
 if (checkpoint3_Report4_5_nogrowth=="yes"){
   ## Frequency of organisms under survey per 100,000 tested patients
-  write.csv(exp_rpt4_1(incidence_blood), file="./ResultData/Report4_frequency_blood_samples.csv", row.names=FALSE)
+  df4_1 <- exp_rpt4_1(incidence_blood)
+  write.csv(x   =rename_str_indf(df=df4_1, check_str=check_a_baumanii, df_col=1, new_str="A. baumannii", ori_str="Acinetobacter spp."), 
+            file="./ResultData/Report4_frequency_blood_samples.csv", row.names=FALSE)
   ## Frequency of priority pathogens under survey per 100,000 tested patients
-  write.csv(exp_rpt4_2(incidence_blood_antibiotic), file="./ResultData/Report4_frequency_priority_pathogen.csv", row.names=FALSE)
+  df4_2 <- exp_rpt4_2(incidence_blood_antibiotic)
+  df4_2 <- rename_str_indf(df=df4_2, check_str=check_a_baumanii, df_col=1, new_str="A. baumannii", ori_str="Acinetobacter spp.")
+  write.csv(x   =rename_str_indf(df=df4_2, check_str=check_a_baumanii, df_col=2, new_str="Carbapenem-NSA. baumannii", ori_str="Carbapenem-NSAcinetobacter spp."), 
+            file="./ResultData/Report4_frequency_priority_pathogen.csv", row.names=FALSE)
+  ## Frequency of organisms under survey per 100,000 tested patients
+  #write.csv(exp_rpt4_1(incidence_blood), file="./ResultData/Report4_frequency_blood_samples.csv", row.names=FALSE)
+  ## Frequency of priority pathogens under survey per 100,000 tested patients
+  #write.csv(exp_rpt4_2(incidence_blood_antibiotic), file="./ResultData/Report4_frequency_priority_pathogen.csv", row.names=FALSE)
 }else{}
 
 # Aggregated data to be exported in csv: Report 5 ####
 if (checkpoint_hosp_adm_data_ava=="yes" & checkpoint3_Report4_5_nogrowth=="yes"){
   ## Community-origin: Frequency of organisms under survey per 100,000 tested patients
-  write.csv(exp_rpt5_1(incidence_blood_co), file="./ResultData/Report5_incidence_blood_samples_community_origin.csv", row.names=FALSE)
+  df5_1 <- exp_rpt5_1(incidence_blood_co)
+  write.csv(x    =rename_str_indf(df=df5_1, check_str=check_a_baumanii, df_col=1, new_str="A. baumannii", ori_str="Acinetobacter spp."), 
+            file="./ResultData/Report5_incidence_blood_samples_community_origin.csv", row.names=FALSE)
   ## Community-origin: Frequency of priority pathogens under survey per 100,000 tested patients
-  write.csv(exp_rpt5_2(incidence_blood_antibiotic_co), file="./ResultData/Report5_incidence_blood_samples_community_origin_antibiotic.csv", row.names=FALSE)
+  df5_2 <- exp_rpt5_2(incidence_blood_antibiotic_co)
+  df5_2 <- rename_str_indf(df=df5_2, check_str=check_a_baumanii, df_col=1, new_str="A. baumannii", ori_str="Acinetobacter spp.")
+  write.csv(x   =rename_str_indf(df=df5_2, check_str=check_a_baumanii, df_col=2, new_str="Carbapenem-NSA. baumannii", ori_str="Carbapenem-NSAcinetobacter spp."), 
+            file="./ResultData/Report5_incidence_blood_samples_community_origin_antibiotic.csv", row.names=FALSE)
   ## Hospital-origin: Frequency of priority pathogens under survey per 100,000 tested patients
-  write.csv(exp_rpt5_3(incidence_blood_ho), file="./ResultData/Report5_incidence_blood_samples_hospital_origin.csv", row.names=FALSE)
+  df5_3 <- exp_rpt5_3(incidence_blood_ho)
+  write.csv(x   =rename_str_indf(df=df5_3, check_str=check_a_baumanii, df_col=1, new_str="A. baumannii", ori_str="Acinetobacter spp."), 
+            file="./ResultData/Report5_incidence_blood_samples_hospital_origin.csv", row.names=FALSE)
   ## Hospital-origin: Frequency of priority pathogens under survey per 100,000 tested patients
-  write.csv(exp_rpt5_4(incidence_blood_antibiotic_ho), file="./ResultData/Report5_incidence_blood_samples_hospital_origin_antibiotic.csv", row.names=FALSE)
+  df5_4 <- exp_rpt5_4(incidence_blood_antibiotic_ho)
+  df5_4 <- rename_str_indf(df=df5_4, check_str=check_a_baumanii, df_col=1, new_str="A. baumannii", ori_str="Acinetobacter spp.")
+  write.csv(x   =rename_str_indf(df=df5_4, check_str=check_a_baumanii, df_col=2, new_str="Carbapenem-NSA. baumannii", ori_str="Carbapenem-NSAcinetobacter spp."), 
+            file="./ResultData/Report5_incidence_blood_samples_hospital_origin_antibiotic.csv", row.names=FALSE)
+  
+  ## Community-origin: Frequency of organisms under survey per 100,000 tested patients
+  #write.csv(exp_rpt5_1(incidence_blood_co), file="./ResultData/Report5_incidence_blood_samples_community_origin.csv", row.names=FALSE)
+  ## Community-origin: Frequency of priority pathogens under survey per 100,000 tested patients
+  #write.csv(exp_rpt5_2(incidence_blood_antibiotic_co), file="./ResultData/Report5_incidence_blood_samples_community_origin_antibiotic.csv", row.names=FALSE)
+  ## Hospital-origin: Frequency of priority pathogens under survey per 100,000 tested patients
+  #write.csv(exp_rpt5_3(incidence_blood_ho), file="./ResultData/Report5_incidence_blood_samples_hospital_origin.csv", row.names=FALSE)
+  ## Hospital-origin: Frequency of priority pathogens under survey per 100,000 tested patients
+  #write.csv(exp_rpt5_4(incidence_blood_antibiotic_ho), file="./ResultData/Report5_incidence_blood_samples_hospital_origin_antibiotic.csv", row.names=FALSE)
 }else{}
 
 # Aggregated data to be exported in csv: Report 6 ####
+# Page 33 ####
+Organism <- c("Staphylococcus aureus",
+              "Enterococcus spp.",
+              "Streptococcus pneumoniae",
+              "Salmonella spp.",
+              "Escherichia coli",
+              "Klebsiella pneumoniae",
+              "Pseudomonas aeruginosa",
+              "Acinetobacter spp.",
+              
+              "Staphylococcus aureus",
+              "Enterococcus spp.",
+              "Streptococcus pneumoniae",
+              "Salmonella spp.",
+              "Escherichia coli",
+              "Klebsiella pneumoniae",
+              "Pseudomonas aeruginosa",
+              "Acinetobacter spp.")
+Infection_origin <- c("Community-origin",
+                      "Community-origin",
+                      "Community-origin",
+                      "Community-origin",
+                      "Community-origin",
+                      "Community-origin",
+                      "Community-origin",
+                      "Community-origin",
+                      
+                      "Hospital-origin",
+                      "Hospital-origin",
+                      "Hospital-origin",
+                      "Hospital-origin",
+                      "Hospital-origin",
+                      "Hospital-origin",
+                      "Hospital-origin",
+                      "Hospital-origin")
+Number_of_deaths <- c(crf_sa_co,
+             crf_es_co,
+             crf_sp_co,
+             crf_ss_co,
+             crf_ec_co,
+             crf_kp_co,
+             crf_pa_co, 
+             crf_as_co,
+             
+             crf_sa_ho,
+             crf_es_ho,
+             crf_sp_ho,
+             crf_ss_ho,
+             crf_ec_ho,
+             crf_kp_ho,
+             crf_pa_ho, 
+             crf_as_ho)
+Total_number_of_patients <- c(length(which(merged_blood_dedup_sa$InfOri == 0)),
+                      length(which(merged_blood_dedup_es$InfOri == 0)),
+                      length(which(merged_blood_dedup_sp$InfOri == 0)),
+                      length(which(merged_blood_dedup_ss$InfOri == 0)),
+                      length(which(merged_blood_dedup_ec$InfOri == 0)),
+                      length(which(merged_blood_dedup_kp$InfOri == 0)),
+                      length(which(merged_blood_dedup_pa$InfOri == 0)),
+                      length(which(merged_blood_dedup_as$InfOri == 0)),
+                        
+                      length(which(merged_blood_dedup_sa$InfOri == 1)),
+                      length(which(merged_blood_dedup_es$InfOri == 1)),
+                      length(which(merged_blood_dedup_sp$InfOri == 1)),
+                      length(which(merged_blood_dedup_ss$InfOri == 1)),
+                      length(which(merged_blood_dedup_ec$InfOri == 1)),
+                      length(which(merged_blood_dedup_kp$InfOri == 1)),
+                      length(which(merged_blood_dedup_pa$InfOri == 1)),
+                      length(which(merged_blood_dedup_as$InfOri == 1)))
+df6_1 <- data.frame(Organism,Infection_origin,Number_of_deaths,Total_number_of_patients)
+write.csv(x   =rename_str_indf(df=df6_1, check_str=check_a_baumanii, df_col=-2, new_str="Acinetobacter baumannii", ori_str="Acinetobacter spp."), 
+          file="./ResultData/Report6_mortality_byorganism.csv", row.names=FALSE)
+#write.csv(data.frame(Organism,Infection_origin,Number_of_deaths,Total_number_of_patients), file="./ResultData/Report6_mortality_byorganism.csv", row.names=FALSE)
+
+# Page 34-37 ####
 rpt6 <- exp_rpt6(co_extRep_blood_sa_deathgraph,co_extRep_blood_es_deathgraph,co_extRep_blood_sp_deathgraph,co_extRep_blood_ss_deathgraph,
                  co_extRep_blood_ec_deathgraph,co_extRep_blood_kp_deathgraph,co_extRep_blood_pa_deathgraph,co_extRep_blood_as_deathgraph)
 Number_of_deaths <- c(nrow(co_extRep_blood_stapha[which(co_extRep_blood_stapha$ASTmrsa == "1" & co_extRep_blood_stapha$disoutcome_cat == "died"),]),
@@ -2431,7 +2637,10 @@ Total_number_of_patients <- c(nrow(co_extRep_blood_stapha[which(co_extRep_blood_
                               nrow(ho_extRep_blood_pseudoa[which(ho_extRep_blood_pseudoa$ASTCarbapenem == "0"),]),
                               nrow(ho_extRep_blood_acines[which(ho_extRep_blood_acines$ASTCarbapenem == "1"),]),
                               nrow(ho_extRep_blood_acines[which(ho_extRep_blood_acines$ASTCarbapenem == "0"),]))
-write.csv(data.frame(rpt6,Number_of_deaths,Total_number_of_patients), file="./ResultData/Report6_mortality_table.csv", row.names=FALSE)
+df6_2 <- data.frame(rpt6,Number_of_deaths,Total_number_of_patients)
+write.csv(x   =rename_str_indf(df=df6_2, check_str=check_a_baumanii, df_col=-2, new_str="Acinetobacter baumannii", ori_str="Acinetobacter spp."), 
+          file="./ResultData/Report6_mortality_table.csv", row.names=FALSE)
+#write.csv(data.frame(rpt6,Number_of_deaths,Total_number_of_patients), file="./ResultData/Report6_mortality_table.csv", row.names=FALSE)
 
 #P.39
 micro_pos_dedup_csv <- micro_pos_dedup

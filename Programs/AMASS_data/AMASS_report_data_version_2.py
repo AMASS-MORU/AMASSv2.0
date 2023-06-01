@@ -105,7 +105,8 @@ try:
 
         try:
             summary_1 = pd.read_excel(summary_1_i)
-            summary_1["except_organism"] = summary_1["except_organism"].fillna("")
+            summary_1["except_organism"]  = summary_1["except_organism"].fillna("")
+            summary_1["include_organism"] = summary_1["include_organism"].fillna("")
             summary_1["blood_samples"] = summary_1["blood_samples"].fillna("NA")
             summary_1 = summary_1.reset_index().drop(columns=["index"])
             summary_1["organism_fmt"] = ""
@@ -116,7 +117,11 @@ try:
                     summary_1.loc[idx,"except_organism"] = prepare_except_org_for_summarytable(summary_1.loc[idx,"except_organism"])
                     summary_1.at[idx,"organism_fmt"] = Paragraph(summary_1.loc[idx,"rule_organism"] + " except " + summary_1.loc[idx,"except_organism"], style_summary)
                 else:
-                    summary_1.at[idx,"organism_fmt"] = Paragraph(summary_1.loc[idx,"rule_organism"], style_summary)
+                    if summary_1.loc[idx,"include_organism"] != "":
+                        summary_1.loc[idx,"include_organism"] = prepare_except_org_for_summarytable(summary_1.loc[idx,"include_organism"])
+                        summary_1.at[idx,"organism_fmt"] = Paragraph(summary_1.loc[idx,"rule_organism"] + " include " + summary_1.loc[idx,"include_organism"], style_summary)
+                    else:
+                        summary_1.at[idx,"organism_fmt"] = Paragraph(summary_1.loc[idx,"rule_organism"], style_summary)
                 ##estimated number will not show if no_growth is not available
                 if len(lst_no_growth) > 0:
                     pass

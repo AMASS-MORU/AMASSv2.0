@@ -4,6 +4,15 @@
 # Aim: to enable hospitals with microbiology data available in electronic formats
 # to analyze their own data and generate Supplementary data indicators reports systematically.
 
+#Adding organisms to family_enterobacteriaceae at retrieve_all_family() (04/10/22)
+#Editing prepare_datai_org() for supporting "; include" (04/10/22)
+#Editing check_blocon() for supporting "; include" (04/10/22)
+#Editing assign_org_popcon() for supporting "; include" (04/10/22)
+#Editting create_summary_table_supp_poerr_v2() and create_summary_table_supp_pocon_v2() for supporting no case in df_mi (17/10/22)
+#Editing prepare_datai_org() from "; include" to "; including"  (19/10/22)
+#Editing check_blocon() from "; include" to "; including" (19/10/22)
+#Editing assign_org_popcon() from "; include" to "; including" (19/10/22)
+
 # Created on 20th April 2022
 import pandas as pd #for creating and manipulating dataframe
 from pathlib import Path #for retrieving input's path
@@ -125,10 +134,12 @@ def create_new_drugcol(df, col_drug, col_drug_new):
 #df: datai
 #col_org: column name of organism
 #return value: dataframe with columns for "rule_organism", "except_organism", and "tax_level"
-def prepare_datai_org(df, col_org, lst_fam, lst_ge, lst_sci):
+def prepare_datai_org(df, col_org, lst_fam, lst_ge, lst_sci): # + include
     df["organism_1"] = df[col_org].replace(regex=["organism_","family_"],value="").replace(regex=["_"],value=" ")
     df[['rule_organism','except_organism']] = df['organism_1'].str.split(";",1,expand=True) #spliting org col to rule_organism and except_organism
     df['except_organism'] = df['except_organism'].str.replace(', ',',').str.replace(' except ','').str.replace('except ','').str.replace('except','').fillna('') #cleaning org spcies
+    df[['rule_organism','include_organism']] = df['organism_1'].str.split(";",1,expand=True) #spliting org col to rule_organism and except_organism
+    df['include_organism'] = df['include_organism'].str.replace(', ',',').str.replace(' including ','').str.replace('including ','').str.replace('including','').fillna('') #cleaning org spcies
     df["tax_level"] = ""
     for idx in df.index:
         ##Assigning tax_level
@@ -138,11 +149,39 @@ def prepare_datai_org(df, col_org, lst_fam, lst_ge, lst_sci):
             df.at[idx,"tax_level"] = "organism"
         elif df.loc[idx,"rule_organism"].lower() in lst_fam:
             df.at[idx,"tax_level"] = "family"
-        elif df.loc[idx,"rule_organism"].lower() in lst_sci:
+        elif (df.loc[idx,"rule_organism"].lower() in lst_sci) or ("viridans" in df.loc[idx,"rule_organism"]):
             df.at[idx,"tax_level"] = "organism"
         else:
             df.at[idx,"tax_level"] = "NA"
+        
+        ##Cleaning except_organism and include_organism columns
+        if "including" in df.loc[idx,"except_organism"]:
+            df.at[idx,"except_organism"] = ""
+        elif "except" in df.loc[idx,"include_organism"]:
+            df.at[idx,"include_organism"] = ""
+        else:
+            pass
     return df
+
+#worked!!
+# def prepare_datai_org(df, col_org, lst_fam, lst_ge, lst_sci):
+#     df["organism_1"] = df[col_org].replace(regex=["organism_","family_"],value="").replace(regex=["_"],value=" ")
+#     df[['rule_organism','except_organism']] = df['organism_1'].str.split(";",1,expand=True) #spliting org col to rule_organism and except_organism
+#     df['except_organism'] = df['except_organism'].str.replace(', ',',').str.replace(' except ','').str.replace('except ','').str.replace('except','').fillna('') #cleaning org spcies
+#     df["tax_level"] = ""
+#     for idx in df.index:
+#         ##Assigning tax_level
+#         if df.loc[idx,"rule_organism"].lower() == "all":
+#             df.at[idx,"tax_level"] = "all"
+#         elif df.loc[idx,"rule_organism"].replace(" spp","").lower() in lst_ge:
+#             df.at[idx,"tax_level"] = "organism"
+#         elif df.loc[idx,"rule_organism"].lower() in lst_fam:
+#             df.at[idx,"tax_level"] = "family"
+#         elif df.loc[idx,"rule_organism"].lower() in lst_sci:
+#             df.at[idx,"tax_level"] = "organism"
+#         else:
+#             df.at[idx,"tax_level"] = "NA"
+#     return df
 
 #Preparing antibiotics in datai
 #df_datai: datai
@@ -493,41 +532,46 @@ def export_records_annexA(df, dictionary, col_spcdate, col_organism):
 #Retrieving available family based on dictionary_for_microbiology_data
 #return: dataframe with 2 columns; amass_name: family name, user_name: scientific name
 def retrieve_all_family(df_dict):
-    list_org_ent = ["organism_citrobacter_amalonaticus"    , "organism_citrobacter_freundii"     , "organism_citrobacter_koseri", 
-                       "organism_enterobacter_cloacae_complex", "organism_escherichia_coli"         , "organism_escherichia_hermannii", 
-                       "organism_klebsiella_aerogenes"        , "organism_klebsiella_oxytoca"       , "organism_klebsiella_pneumoniae",
-                       "organism_klebsiella_pseudopneumoniae" , "organism_klebsiella_variicola"     , "organism_leclercia_adecarboxylata", 
-                       "organism_proteus_mirabilis"           , "organism_proteus_penneri"          , "organism_proteus_rettgeri", 
-                       "organism_proteus_vulgaris"            , "organism_raoultella_ornitholytica" , "organism_raoultella_planticola",
-                       "organism_raoultella_spp"              , "organism_raoultella_terrigena"     , "organism_salmonella_agona", 
-                       "organism_salmonella_amsterdam"        ,  "organism_salmonella_anatum"       , "organism_salmonella_arechavaleta",
-                       "organism_salmonella_bareilly"         , "organism_salmonella_blockley"      , "organism_salmonella_bongori", 
-                       "organism_salmonella_bonnA"             , "organism_salmonella_bovismorbificans", "organism_salmonella_braenderup", 
-                       "organism_salmonella_brandenburg"      , "organism_salmonella_bredeney"      , "organism_salmonella_cerro", 
-                       "organism_salmonella_chester"          , "organism_salmonella_choleraesuis"  , "organism_salmonella_copenhagen", 
-                       "organism_salmonella_derby"            , "organism_salmonella_dublin"        , "organism_salmonella_emek", 
-                       "organism_salmonella_enteritidis"      , "organism_salmonella_falkensee"     , "organism_salmonella_gallinarum", 
-                       "organism_salmonella_give"             , "organism_salmonella_goldcoast"     , "organism_salmonella_hadar", 
-                       "organism_salmonella_heidelberg"       , "organism_salmonella_hirschfeldii"  , "organism_salmonella_infantis",
-                       "organism_salmonella_java"             , "organism_salmonella_javiana"       , "organism_salmonella_kaapstad", 
-                       "organism_salmonella_kedougou"         , "organism_salmonella_kentucky"      , "organism_salmonella_kottbus", 
-                       "organism_salmonella_krefeld"          , "organism_salmonella_lexington"     , "organism_salmonella_litchfield", 
-                       "organism_salmonella_livingstone"      , "organism_salmonella_lomita"        , "organism_salmonella_london",
-                       "organism_salmonella_manhattan"        , "organism_salmonella_mbandaka"      , "organism_salmonella_montevideo", 
-                       "organism_salmonella_muenchen"         , "organism_salmonella_muenster"      , "organism_salmonella_narashino", 
-                       "organism_salmonella_newport"          , "organism_salmonella_ohio"          , "organism_salmonella_oranienburg", 
-                       "organism_salmonella_orion"            , "organism_salmonella_ouakam"        , "organism_salmonella_panama", 
-                       "organism_salmonella_paratyphi"        , "organism_salmonella_poona"         , "organism_salmonella_potsdam", 
-                       "organism_salmonella_pullorum"         , "organism_salmonella_reading"       , "organism_salmonella_rissen", 
-                       "organism_salmonella_saintpaul"        , "organism_salmonella_schottmuelleri", "organism_salmonella_schwarzengrund", 
-                       "organism_salmonella_senftenberg"      , "organism_salmonella_stanley"       , "organism_salmonella_tennessee", 
-                       "organism_salmonella_thompson"         , "organism_salmonella_typhi"         , "organism_salmonella_typhimurium", 
-                       "organism_salmonella_typhisuis"        , "organism_salmonella_virchow"       , "organism_salmonella_virginia", 
-                       "organism_salmonella_wandsworth"       , "organism_salmonella_weltevreden"   , "organism_salmonella_weybridge", 
-                       "organism_salmonella_worthington"      , "organism_non-typhoidal_salmonella_spp", "organism_salmonella_spp", 
-                       "organism_shigella_boydii"             , "organism_shigella_dysenteriae"     , "organism_shigella_flexneri", 
-                       "organism_shigella_sonnei"             , "organism_shigella_spp"             , "organism_yersinia_enterocolitica", 
-                       "organism_yersinia_pseudotuberculosis" , "organism_other_enterobacteriaceae"]
+    list_org_ent = ["organism_citrobacter_amalonaticus"    , "organism_citrobacter_freundii"     , "organism_citrobacter_koseri",    "organism_citrobacter_spp",
+                "organism_enterobacter_cloacae_complex", "organism_enterobacter_spp"         ,
+                "organism_escherichia_coli"            , "organism_escherichia_hermannii"    , "organism_escherichia_spp", 
+                "organism_hafnia_alvei"                ,
+                "organism_klebsiella_aerogenes"        , "organism_klebsiella_oxytoca"       , "organism_klebsiella_pneumoniae", "organism_klebsiella_pseudopneumoniae" , "organism_klebsiella_variicola", "organism_klebsiella_spp",
+                "organism_leclercia_adecarboxylata"    , 
+                "organism_morganella_morganii"         , "organism_morganella_spp"           ,
+                "organism_proteus_mirabilis"           , "organism_proteus_penneri"          , "organism_proteus_rettgeri",      "organism_proteus_stuartii"            , "organism_proteus_vulgaris"    , "organism_proteus_spp",
+                "organism_providencia_spp"             ,
+                "organism_raoultella_ornitholytica"    , "organism_raoultella_planticola"    , "organism_raoultella_terrigena",  "organism_raoultella_spp", 
+                "organism_salmonella_agona", 
+                "organism_salmonella_amsterdam"        ,  "organism_salmonella_anatum"       , "organism_salmonella_arechavaleta",
+                "organism_salmonella_bareilly"         , "organism_salmonella_blockley"      , "organism_salmonella_bongori", 
+                "organism_salmonella_bonnA"             , "organism_salmonella_bovismorbificans", "organism_salmonella_braenderup", 
+                "organism_salmonella_brandenburg"      , "organism_salmonella_bredeney"      , "organism_salmonella_cerro", 
+                "organism_salmonella_chester"          , "organism_salmonella_choleraesuis"  , "organism_salmonella_copenhagen", 
+                "organism_salmonella_derby"            , "organism_salmonella_dublin"        , "organism_salmonella_emek", 
+                "organism_salmonella_enteritidis"      , "organism_salmonella_falkensee"     , "organism_salmonella_gallinarum", 
+                "organism_salmonella_give"             , "organism_salmonella_goldcoast"     , "organism_salmonella_hadar", 
+                "organism_salmonella_heidelberg"       , "organism_salmonella_hirschfeldii"  , "organism_salmonella_infantis",
+                "organism_salmonella_java"             , "organism_salmonella_javiana"       , "organism_salmonella_kaapstad", 
+                "organism_salmonella_kedougou"         , "organism_salmonella_kentucky"      , "organism_salmonella_kottbus", 
+                "organism_salmonella_krefeld"          , "organism_salmonella_lexington"     , "organism_salmonella_litchfield", 
+                "organism_salmonella_livingstone"      , "organism_salmonella_lomita"        , "organism_salmonella_london",
+                "organism_salmonella_manhattan"        , "organism_salmonella_mbandaka"      , "organism_salmonella_montevideo", 
+                "organism_salmonella_muenchen"         , "organism_salmonella_muenster"      , "organism_salmonella_narashino", 
+                "organism_salmonella_newport"          , "organism_salmonella_ohio"          , "organism_salmonella_oranienburg", 
+                "organism_salmonella_orion"            , "organism_salmonella_ouakam"        , "organism_salmonella_panama", 
+                "organism_salmonella_paratyphi"        , "organism_salmonella_poona"         , "organism_salmonella_potsdam", 
+                "organism_salmonella_pullorum"         , "organism_salmonella_reading"       , "organism_salmonella_rissen", 
+                "organism_salmonella_saintpaul"        , "organism_salmonella_schottmuelleri", "organism_salmonella_schwarzengrund", 
+                "organism_salmonella_senftenberg"      , "organism_salmonella_stanley"       , "organism_salmonella_tennessee", 
+                "organism_salmonella_thompson"         , "organism_salmonella_typhi"         , "organism_salmonella_typhimurium", 
+                "organism_salmonella_typhisuis"        , "organism_salmonella_virchow"       , "organism_salmonella_virginia", 
+                "organism_salmonella_wandsworth"       , "organism_salmonella_weltevreden"   , "organism_salmonella_weybridge", 
+                "organism_salmonella_worthington"      , "organism_non-typhoidal_salmonella_spp", "organism_salmonella_spp", 
+                "organism_serratia_marcescens"         , "organism_serratia_spp"             , 
+                "organism_shigella_boydii"             , "organism_shigella_dysenteriae"     , "organism_shigella_flexneri"      , "organism_shigella_sonnei"             , "organism_shigella_spp",      
+                "organism_yersinia_enterocolitica"     , "organism_yersinia_pseudotuberculosis" , "organism_yersinia_spp",
+                "organism_other_enterobacteriaceae"]
     ##Retrieving family Enterobacteriaceae
     dict_org_ent = df_dict.loc[df_dict["amass_name"].isin(list_org_ent),["amass_name","user_name"]].fillna("")
     dict_org_ent["amass_name"] = "family_enterobacteriaceae"
@@ -680,18 +724,39 @@ def create_list_for_rule2_comb(lst_drug_ava):
 def assign_org_pocon(df_qc):
     df_qc[["rule_ge","rule_sp"]] = ""
     df_qc["except_sp"] = ""
+    df_qc["include_sp"] = ""
     for idx in df_qc.index:
         rule_org = df_qc.loc[idx,"rule_organism"].split(" ")
         except_org = df_qc.loc[idx,"except_organism"].split(",")
+        include_org = df_qc.loc[idx,"include_organism"].split(",")
         if df_qc.loc[idx,"tax_level"] == "organism":
             df_qc.loc[idx,["rule_ge"]] = rule_org[0] #string
             df_qc.loc[idx,["rule_sp"]] = rule_org[1] #string
-            df_qc.at[idx,"except_sp"] = except_org   #list
+            df_qc.at[idx,"except_sp"]  = except_org  #list
+            df_qc.at[idx,"include_sp"] = include_org #list
         elif df_qc.loc[idx,"tax_level"] == "family":
             df_qc.loc[idx,["rule_ge"]] = rule_org[0] #string
             df_qc.loc[idx,["rule_sp"]] = "spp"       #string
-            df_qc.at[idx,"except_sp"] = except_org   #list
+            df_qc.at[idx,"except_sp"]  = except_org  #list
+            df_qc.at[idx,"include_sp"] = include_org #list
     return df_qc
+
+#worked!!
+# def assign_org_pocon(df_qc):
+#     df_qc[["rule_ge","rule_sp"]] = ""
+#     df_qc["except_sp"] = ""
+#     for idx in df_qc.index:
+#         rule_org = df_qc.loc[idx,"rule_organism"].split(" ")
+#         except_org = df_qc.loc[idx,"except_organism"].split(",")
+#         if df_qc.loc[idx,"tax_level"] == "organism":
+#             df_qc.loc[idx,["rule_ge"]] = rule_org[0] #string
+#             df_qc.loc[idx,["rule_sp"]] = rule_org[1] #string
+#             df_qc.at[idx,"except_sp"] = except_org   #list
+#         elif df_qc.loc[idx,"tax_level"] == "family":
+#             df_qc.loc[idx,["rule_ge"]] = rule_org[0] #string
+#             df_qc.loc[idx,["rule_sp"]] = "spp"       #string
+#             df_qc.at[idx,"except_sp"] = except_org   #list
+#     return df_qc
 
 #Assigning available drugs for other sets
 #df_qc: raw dataframe of other sets
@@ -787,20 +852,42 @@ def check_org(tax_qc,org_qc,fam_mi,org_mi):
 
 #Checking blood culture contaminant
 #return value: boolean (True: assign warning, False: passed)
-def check_blocon(qc_ge,  qc_ex,  qc_spc, mi_sci, mi_fam, mi_spc):
+def check_blocon(qc_ge,  qc_ex, qc_in, qc_spc, mi_sci, mi_fam, mi_spc):
     boolean_result = False
     ##Species## Rule: staphylococcus spp; except staphylococcus aureus
-    if qc_ge.lower() in mi_sci.lower() or qc_ge.lower() in mi_fam.lower(): #If "staphylococcus" in "staphylococcus spp" >>> do next process
+    if (qc_ge.lower() in mi_sci.lower()) or (qc_ge.lower() in mi_fam.lower()): #If "staphylococcus" in "staphylococcus spp" >>> do next process
         if mi_sci.lower() in qc_ex:                                        #If "staphylococcus aureus" in ["staphylococcus aureus", "staphylococcus ludunensis"] >>> passed
             pass
         else:                                                              #If "staphylococcus spp" NOT in ["staphylococcus aureus", "staphylococcus ludunensis"] >>> do next process
             if check_spctype_1(qc_spc,mi_spc):                             #if result_spc is True >>> assign priority and report status
                 boolean_result = True
-            else:                                                          #if result_spc is FALSE >>> assign priority and report status
+            else:                                                          #if result_spc is FALSE >>> pass
                 pass
+
+    if (mi_sci != "") and (mi_sci.lower() in qc_in):           #If "streptococcus gordonii" in "streptococcus gordonii" >>> do next process
+        if check_spctype_1(qc_spc,mi_spc):                             #if result_spc is True >>> assign priority and report status
+                boolean_result = True
+        else:                                                          #if result_spc is FALSE >>> pass
+            pass
     else:
         pass
     return boolean_result
+
+#worked!!    
+# def check_blocon(qc_ge,  qc_ex,  qc_spc, mi_sci, mi_fam, mi_spc):
+#     boolean_result = False
+#     ##Species## Rule: staphylococcus spp; except staphylococcus aureus
+#     if qc_ge.lower() in mi_sci.lower() or qc_ge.lower() in mi_fam.lower(): #If "staphylococcus" in "staphylococcus spp" >>> do next process
+#         if mi_sci.lower() in qc_ex:                                        #If "staphylococcus aureus" in ["staphylococcus aureus", "staphylococcus ludunensis"] >>> passed
+#             pass
+#         else:                                                              #If "staphylococcus spp" NOT in ["staphylococcus aureus", "staphylococcus ludunensis"] >>> do next process
+#             if check_spctype_1(qc_spc,mi_spc):                             #if result_spc is True >>> assign priority and report status
+#                 boolean_result = True
+#             else:                                                          #if result_spc is FALSE >>> pass
+#                 pass
+#     else:
+#         pass
+#     return boolean_result
 
 #Checking potential error in AST result and intrinsically resistant to antibiotic
 #return value: boolean (True: assign warning, False: passed)
@@ -933,12 +1020,33 @@ def create_summary_table_supp_poerr_v2(df_qc, df_mi, int_denominator, col_mi_dru
         if rule_org.lower() == "all":
             df_qc_1.at[idx,"number_blood"] = len(df_mi.loc[df_mi[col_mi_drug]==rule_drug])
         else:
-            df_qc_1.at[idx,"number_blood"] = len(df_mi.loc[((df_mi[col_mi_org]==rule_org)&(df_mi[col_mi_drug]==rule_drug))|((df_mi[col_mi_fam]==rule_org)&(df_mi[col_mi_drug]==rule_drug))|((df_mi[col_mi_gen]==rule_org)&(df_mi[col_mi_drug]==rule_drug))])
+            if len(df_mi)>0:
+                df_qc_1.at[idx,"number_blood"] = len(df_mi.loc[((df_mi[col_mi_org]==rule_org)&(df_mi[col_mi_drug]==rule_drug))|((df_mi[col_mi_fam]==rule_org)&(df_mi[col_mi_drug]==rule_drug))|((df_mi[col_mi_gen]==rule_org)&(df_mi[col_mi_drug]==rule_drug))])
+            else:
+                df_qc_1.at[idx,"number_blood"] = 0
         df_qc_1.at[idx,col_qc_org] = rule_org.capitalize().replace(" spp"," spp.")
         df_qc_1.at[idx,col_qc_drug] = df_qc_1.loc[idx,col_qc_drug].replace("_"," ")
         df_qc_1.at[idx,"blood_samples"] = cal_perc_annex_v1(df_qc_1.loc[idx,"number_blood"],int_denominator) + \
                                                     " (" + str(df_qc_1.loc[idx,"number_blood"]) + "/" + str(int_denominator) + ")"
     return df_qc_1.loc[:,[col_qc_org,col_qc_drug,"blood_samples","number_blood"]].reset_index().drop(columns=["index","number_blood"])
+
+
+#old
+# def create_summary_table_supp_poerr_v2(df_qc, df_mi, int_denominator, col_mi_drug, col_qc_org="rule_organism", col_qc_drug="antibiotic", col_mi_gen="mapped_gen", col_mi_org="mapped_sci", col_mi_fam="mapped_fam"):
+#     df_qc_1 = df_qc.copy()
+#     df_qc_1[["number_blood","blood_samples"]] = ""
+#     for idx in df_qc_1.index:
+#         rule_org = df_qc_1.loc[idx,col_qc_org]
+#         rule_drug = df_qc_1.loc[idx,col_qc_drug]
+#         if rule_org.lower() == "all":
+#             df_qc_1.at[idx,"number_blood"] = len(df_mi.loc[df_mi[col_mi_drug]==rule_drug])
+#         else:
+#             df_qc_1.at[idx,"number_blood"] = len(df_mi.loc[((df_mi[col_mi_org]==rule_org)&(df_mi[col_mi_drug]==rule_drug))|((df_mi[col_mi_fam]==rule_org)&(df_mi[col_mi_drug]==rule_drug))|((df_mi[col_mi_gen]==rule_org)&(df_mi[col_mi_drug]==rule_drug))])
+#         df_qc_1.at[idx,col_qc_org] = rule_org.capitalize().replace(" spp"," spp.")
+#         df_qc_1.at[idx,col_qc_drug] = df_qc_1.loc[idx,col_qc_drug].replace("_"," ")
+#         df_qc_1.at[idx,"blood_samples"] = cal_perc_annex_v1(df_qc_1.loc[idx,"number_blood"],int_denominator) + \
+#                                                     " (" + str(df_qc_1.loc[idx,"number_blood"]) + "/" + str(int_denominator) + ")"
+#     return df_qc_1.loc[:,[col_qc_org,col_qc_drug,"blood_samples","number_blood"]].reset_index().drop(columns=["index","number_blood"])
 
 def create_summary_table_supp_poerr(df_qc, df_mi, int_denominator, col_mi_drug, col_qc_org="rule_organism", col_qc_drug="antibiotic", col_mi_org="mapped_sci", col_mi_fam="mapped_fam"):
     df_qc_1 = df_qc.copy()
@@ -975,10 +1083,10 @@ def create_summary_table_supp_pocon(df_qc, df_mi, int_denominator, col_mi_warnin
                                                         " (" + str(df_qc_1.loc[idx,"number_blood"]) + "/" + str(int_denominator) + ")"
     return df_qc_1.loc[:,[col_qc_org,col_qc_exorg,"blood_samples","number_blood"]].reset_index().drop(columns=["index","number_blood"])
 
-def create_summary_table_supp_pocon_v2(boolean_nogrowth,df_qc, df_mi, int_denominator, col_qc_org="rule_organism", col_qc_exorg="except_organism", col_mi_org="mapped_sci", col_mi_fam="mapped_fam"):
+def create_summary_table_supp_pocon_v2(boolean_nogrowth,df_qc, df_mi, int_denominator, col_qc_org="rule_organism", col_qc_exorg="except_organism", col_qc_inorg="include_organism", col_mi_org="mapped_sci", col_mi_fam="mapped_fam"):
     lst_ge = []
+    df_mi_1 = df_mi.copy()
     if  len(df_mi) > 0: #there is at least 1 record
-        df_mi_1 = df_mi.copy()
         df_mi_1[["genus","species"]] = df_mi_1[col_mi_org].str.split(" ",1,expand=True)
         lst_ge = list(set(df_mi_1["genus"])) + list(set(df_mi_1[col_mi_fam])) #list of unique genus + family
     else:
@@ -991,14 +1099,20 @@ def create_summary_table_supp_pocon_v2(boolean_nogrowth,df_qc, df_mi, int_denomi
     for idx in df_qc_1.index:
         str_ge = df_qc_1.loc[idx,"genus"]
         if boolean_nogrowth is True:
-            if str_ge in lst_ge:
-                df_qc_1.at[idx,"number_blood"] = len(df_mi_1.loc[df_mi_1["genus"]==str_ge])
-            df_qc_1.at[idx,"blood_samples"] = cal_perc_annex_v1(df_qc_1.loc[idx,"number_blood"],int_denominator) + \
-                                                            " (" + str(df_qc_1.loc[idx,"number_blood"]) + "/" + str(int_denominator) + ")"
+            if len(df_mi_1)>0:
+                if (str_ge in lst_ge) and ("viridans" not in str_ge):
+                    df_qc_1.at[idx,"number_blood"] = len(df_mi_1.loc[df_mi_1["genus"]==str_ge])
+                elif "viridans" in str_ge:
+                    df_qc_1.at[idx,"number_blood"] = len(df_mi_1.loc[df_mi_1["genus"].str.contains("viridans")]) + len(df_mi_1.loc[df_mi_1["genus"]=="streptococcus"])
+                else:
+                    pass
+                df_qc_1.at[idx,"blood_samples"] = cal_perc_annex_v1(df_qc_1.loc[idx,"number_blood"],int_denominator) + \
+                                                                " (" + str(df_qc_1.loc[idx,"number_blood"]) + "/" + str(int_denominator) + ")"
+            else:
+                df_qc_1.at[idx,"blood_samples"] = "0 (0/" + str(int_denominator) + ")"
         else:
             df_qc_1.at[idx,"blood_samples"] = "NA"
-    return df_qc_1.loc[:,[col_qc_org,col_qc_exorg,"blood_samples","number_blood"]].reset_index().drop(columns=["index","number_blood"])
-
+    return df_qc_1.loc[:,[col_qc_org,col_qc_exorg,col_qc_inorg, "blood_samples","number_blood"]].reset_index().drop(columns=["index","number_blood"])
 
 #Formating date (i.e. specimen collection date) into "01 Jan 2012" format
 #Return value: dataframe with formated date column

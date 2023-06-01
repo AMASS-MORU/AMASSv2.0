@@ -79,23 +79,88 @@ aci_spp      = "<i>Acinetobacter</i> spp."
 ent_spp      = "<i>Enterococcus</i> spp."
 sal_spp      = "<i>Salmonella</i> spp."
 
+path_result = "./ResultData/"
+path_input = "./"
+sec1_res_i = "Report1_page3_results.csv"
+sec1_num_i = "Report1_page4_counts_by_month.csv"
+sec2_res_i = "Report2_page5_results.csv"
+sec2_amr_i = "Report2_AMR_proportion_table.csv"
+sec2_org_i = "Report2_page6_counts_by_organism.csv"
+sec2_pat_i = "Report2_page6_patients_under_this_surveillance_by_organism.csv"
+sec3_res_i = "Report3_page12_results.csv"
+sec3_amr_i = "Report3_table.csv"
+sec3_pat_i = "Report3_page13_counts_by_origin.csv"
+sec4_res_i = "Report4_page24_results.csv"
+sec4_blo_i = "Report4_frequency_blood_samples.csv"
+sec4_pri_i = "Report4_frequency_priority_pathogen.csv"
+sec5_res_i = "Report5_page27_results.csv"
+sec5_com_i = "Report5_incidence_blood_samples_community_origin.csv"
+sec5_hos_i = "Report5_incidence_blood_samples_hospital_origin.csv"
+sec5_com_amr_i = "Report5_incidence_blood_samples_community_origin_antibiotic.csv"
+sec5_hos_amr_i = "Report5_incidence_blood_samples_hospital_origin_antibiotic.csv"
+sec6_res_i = "Report6_page32_results.csv"
+sec6_mor_byorg_i = "Report6_mortality_byorganism.csv"
+sec6_mor_i = "Report6_mortality_table.csv"
+secA_res_i = "AnnexA_page39_results.csv"
+secA_pat_i = "AnnexA_patients_with_positive_specimens.csv"
+secA_mor_i = "AnnexA_mortlity_table.csv"
+secB_blo_i = "AnnexB_proportion_table_blood.csv"
+secB_blo_mon_i = "AnnexB_proportion_table_blood_bymonth.csv"
+
+##### dictionary_for_microbiology_data ##### 01/09/22
+dict_ = pd.DataFrame()
+try:
+    dict_ = pd.read_excel(path_input + "dictionary_for_microbiology_data.xlsx").iloc[:,:2].fillna("")
+except:
+    try:
+        dict_ = pd.read_csv(path_input + "dictionary_for_microbiology_data.csv").iloc[:,:2].fillna("")
+    except:
+        dict_ = pd.read_csv(path_input + "dictionary_for_microbiology_data.csv", encoding="windows-1252").iloc[:,:2].fillna("")
+dict_.columns = ["amass_name","user_name"]
+
+try:
+    check_abaumannii = True if "organism_acinetobacter_baumannii" in list(dict_.loc[dict_["amass_name"]=="acinetobacter_spp_or_baumannii","user_name"]) else False
+except:
+    check_abaumannii = False
+lst_org_rpt4_0 = []
+if check_abaumannii:
+    aci_spp      = "<i>Acinetobacter baumannii</i>"
+    lst_org_rpt4_0 = ["Staphylococcus aureus", 
+                      "Enterococcus spp.", 
+                      "Streptococcus pneumoniae", 
+                      "Salmonella spp.", 
+                      "Escherichia coli", 
+                      "Klebsiella pneumoniae", 
+                      "Pseudomonas aeruginosa", 
+                      "Acinetobacter baumannii"]
+else:
+    aci_spp        = "<i>Acinetobacter</i> spp."
+    lst_org_rpt4_0 = ["Staphylococcus aureus", 
+                      "Enterococcus spp.", 
+                      "Streptococcus pneumoniae", 
+                      "Salmonella spp.", 
+                      "Escherichia coli", 
+                      "Klebsiella pneumoniae", 
+                      "Pseudomonas aeruginosa", 
+                      "Acinetobacter spp."]
 lst_org_format= [s_aureus, ent_spp, s_pneumoniae, sal_spp, e_coli, k_pneumoniae, p_aeruginosa, aci_spp]
-lst_org_rpt4 = ["<i>S. aureus</i>", 
-                "<i>Enterococcus</i> spp.", 
-                "<i>S. pneumoniae</i>", 
-                "<i>Salmonella</i> spp.", 
-                "<i>E. coli</i>", 
-                "<i>K. pneumoniae</i>", 
-                "<i>P. aeruginosa</i>", 
-                "<i>Acinetobacter</i> spp."]
-lst_org_rpt4_0 = ["Staphylococcus aureus", 
-                "Enterococcus spp.", 
-                "Streptococcus pneumoniae", 
-                "Salmonella spp.", 
-                "Escherichia coli", 
-                "Klebsiella pneumoniae", 
-                "Pseudomonas aeruginosa", 
-                "Acinetobacter spp."]
+# lst_org_format= [s_aureus, ent_spp, s_pneumoniae, sal_spp, e_coli, k_pneumoniae, p_aeruginosa, aci_spp]
+# lst_org_rpt4 = ["<i>S. aureus</i>", 
+#                 "<i>Enterococcus</i> spp.", 
+#                 "<i>S. pneumoniae</i>", 
+#                 "<i>Salmonella</i> spp.", 
+#                 "<i>E. coli</i>", 
+#                 "<i>K. pneumoniae</i>", 
+#                 "<i>P. aeruginosa</i>", 
+#                 "<i>Acinetobacter</i> spp."]
+# lst_org_rpt4_0 = ["Staphylococcus aureus", 
+#                 "Enterococcus spp.", 
+#                 "Streptococcus pneumoniae", 
+#                 "Salmonella spp.", 
+#                 "Escherichia coli", 
+#                 "Klebsiella pneumoniae", 
+#                 "Pseudomonas aeruginosa", 
+#                 "Acinetobacter spp."]
 lst_org_rpt5_0 = ["MRSA", 
                 "Vancomycin−NS "+lst_org_rpt4_0[1], 
                 "Penicillin−NS "+lst_org_rpt4_0[2], 
@@ -119,33 +184,6 @@ for org in lst_org_format:
     else:                                #Staphylococcus aureus
         name = org_1[0][0]+"_"+org_1[1]
     lst_org_short.append(name.lower())  #['s_aureus', ...]
-
-path_result = "./ResultData/"
-path_input = "./"
-sec1_res_i = "Report1_page3_results.csv"
-sec1_num_i = "Report1_page4_counts_by_month.csv"
-sec2_res_i = "Report2_page5_results.csv"
-sec2_amr_i = "Report2_AMR_proportion_table.csv"
-sec2_org_i = "Report2_page6_counts_by_organism.csv"
-sec2_pat_i = "Report2_page6_patients_under_this_surveillance_by_organism.csv"
-sec3_res_i = "Report3_page12_results.csv"
-sec3_amr_i = "Report3_table.csv"
-sec3_pat_i = "Report3_page13_counts_by_origin.csv"
-sec4_res_i = "Report4_page24_results.csv"
-sec4_blo_i = "Report4_frequency_blood_samples.csv"
-sec4_pri_i = "Report4_frequency_priority_pathogen.csv"
-sec5_res_i = "Report5_page27_results.csv"
-sec5_com_i = "Report5_incidence_blood_samples_community_origin.csv"
-sec5_hos_i = "Report5_incidence_blood_samples_hospital_origin.csv"
-sec5_com_amr_i = "Report5_incidence_blood_samples_community_origin_antibiotic.csv"
-sec5_hos_amr_i = "Report5_incidence_blood_samples_hospital_origin_antibiotic.csv"
-sec6_res_i = "Report6_page32_results.csv"
-sec6_mor_i = "Report6_mortality_table.csv"
-secA_res_i = "AnnexA_page39_results.csv"
-secA_pat_i = "AnnexA_patients_with_positive_specimens.csv"
-secA_mor_i = "AnnexA_mortlity_table.csv"
-secB_blo_i = "AnnexB_proportion_table_blood.csv"
-secB_blo_mon_i = "AnnexB_proportion_table_blood_bymonth.csv"
 
 today = date.today()
 checkpoint_mic = checkpoint(path_input + "microbiology_data.xlsx") or checkpoint(path_input + "microbiology_data.csv")
@@ -334,8 +372,9 @@ if check_config(config, "amr_surveillance_section6") and checkpoint(path_result 
     try:
         sec6_res = pd.read_csv(path_result + sec6_res_i).fillna("NA")
         sec6_mor = pd.read_csv(path_result + sec6_mor_i)
+        sec6_mor_byorg = pd.read_csv(path_result + sec6_mor_byorg_i).fillna(0)
         ##Creating table for page33
-        sec6_mor_all = prepare_section6_mortality_table_for_reportlab(sec6_mor)
+        sec6_mor_all = prepare_section6_mortality_table_for_reportlab(sec6_mor_byorg)
         #### section6; page2-5 #####
         sec6_mor_1 = prepare_section6_mortality_table(sec6_mor)
         sec6_mor_com_1 = create_table_mortal(sec6_mor_1, lst_org_full[0], "Community-origin").replace(regex=["\r"],value="").values.tolist()
@@ -361,8 +400,8 @@ if check_config(config, "amr_surveillance_section6") and checkpoint(path_result 
             for ori in ['Community-origin','Hospital-origin']:
                 create_graph_mortal_1(sec6_G,lst_org_full[i],ori,'Report6_mortality_'+lst_org_short[i]+'_'+ori[:-7].lower())
         #number of patient
-        sec6_numpat_com = prepare_section6_numpat_dict(sec6_mor, "Community-origin")
-        sec6_numpat_hos = prepare_section6_numpat_dict(sec6_mor, "Hospital-origin")
+        sec6_numpat_com = prepare_section6_numpat_dict(sec6_mor_byorg, "Community-origin")
+        sec6_numpat_hos = prepare_section6_numpat_dict(sec6_mor_byorg, "Hospital-origin")
     except Exception as e:
         logger.exception(e)
         pass
@@ -661,10 +700,15 @@ def section1(section1_result, section1_table, lst_pagenumber=pagenumber_ava_1, l
         hos_date_start = str(section1_result.loc[(section1_result["Type_of_data_file"]=="hospital_admission_data")&(section1_result["Parameters"]=="Minimum_date"),"Values"].tolist()[0])
         hos_date_end   = str(section1_result.loc[(section1_result["Type_of_data_file"]=="hospital_admission_data")&(section1_result["Parameters"]=="Maximum_date"),"Values"].tolist()[0])
         hos_num        = str(section1_result.loc[(section1_result["Type_of_data_file"]=="hospital_admission_data")&(section1_result["Parameters"]=="Number_of_records"),"Values"].tolist()[0])
+        patient_days   = str(section1_result.loc[(section1_result["Type_of_data_file"]=="hospital_admission_data")&(section1_result["Parameters"]=="Patient_days"),"Values"].tolist()[0])
+        patient_days_his = str(section1_result.loc[(section1_result["Type_of_data_file"]=="hospital_admission_data")&(section1_result["Parameters"]=="Patient_days_his"),"Values"].tolist()[0])
     else:
         hos_date_start = "NA"
         hos_date_end   = "NA"
         hos_num        = "NA"
+        patient_days   = "NA"
+        patient_days_his = "NA"
+
     ##Page1
     section1_page1_1_1 = "An overview of the data detected by the AMASS application is generated by default. "+ \
                     "The summary is based on the raw data files saved within the same folder as the application file (AMASS.bat)."
@@ -677,16 +721,22 @@ def section1(section1_result, section1_table, lst_pagenumber=pagenumber_ava_1, l
     section1_page1_2_4 = "The hospital_admission_data file (stored in the same folder as the application file) had:"
     section1_page1_2_5 = bold_blue_ital_op + hos_num + bold_blue_ital_ed + " admission data records with hospital admission dates ranging from "
     section1_page1_2_6 = bold_blue_ital_op + hos_date_start + bold_blue_ital_ed + " to " + bold_blue_ital_op + hos_date_end + bold_blue_ital_ed
+    section1_page1_2_7 = "The total number of patient-days was " + bold_blue_ital_op + patient_days + bold_blue_ital_ed + "."
+    section1_page1_2_8 = "The total number of patient-days at risk of BSI of hospital-origin was " + bold_blue_ital_op + patient_days_his + bold_blue_ital_ed + "."
     section1_page1_2 = [section1_page1_2_1, 
                         iden1_op + "<i>" + section1_page1_2_2 + "</i>" + iden_ed, 
                         iden1_op + "<i>" + section1_page1_2_3 + "</i>" + iden_ed, 
                         add_blankline + section1_page1_2_4, 
                         iden1_op + "<i>" + section1_page1_2_5 + "</i>" + iden_ed, 
-                        iden1_op + "<i>" + section1_page1_2_6 + "</i>" + iden_ed]
+                        iden1_op + "<i>" + section1_page1_2_6 + "</i>" + iden_ed,
+                        iden1_op + add_blankline + section1_page1_2_7 + iden_ed,
+                        iden1_op + add_blankline + section1_page1_2_8 + iden_ed]
     section1_page1_3_1 = "[1] If the periods of the data in microbiology_data and hospital_admission_data files are not similar, " + \
                         "the automatically−generated report should be interpreted with caution. " + \
                         "The AMASS generates the reports based on the available data."
-    section1_page1_3 = [green_op + section1_page1_3_1 + green_ed]
+    section1_page1_3_2 = "[2] A patient is defined as at risk of BSI of hospital-origin when the patient is admitted to the hospital for more than two calendar days with calendar day one equal to the day of admission."
+    section1_page1_3 = [green_op + section1_page1_3_1 + green_ed, 
+                        green_op + section1_page1_3_2 + green_ed]
     ##Page2
     section1_page2_1_1 = "Data was stratified by month to assist detection of missing data, and verification of whether the month distribution of data records in microbiology_data file and hospital_admission_data file reflected the microbiology culture frequency and admission rate of the hospital, respectively. " + \
                         "For example if the number of specimens in the microbiology_data file reported below is lower than what is expected, please check the raw data file and data dictionary files."
@@ -698,9 +748,9 @@ def section1(section1_result, section1_table, lst_pagenumber=pagenumber_ava_1, l
     report_title(c,'Introduction',1.07*inch, 9.5*inch,'#3e4444',font_size=12)
     report_context(c,section1_page1_1, 1.0*inch, 7.3*inch, 460, 150, font_size=11)
     report_title(c,'Results',1.07*inch, 7.5*inch,'#3e4444',font_size=12)
-    report_context(c,section1_page1_2, 1.0*inch, 5.3*inch, 460, 150, font_size=11)
-    report_title(c,'Note:',1.07*inch, 4.8*inch,'darkgreen',font_size=12)
-    report_context(c,section1_page1_3, 1.0*inch, 3.0*inch, 460, 120, font_size=11)
+    report_context(c,section1_page1_2, 1.0*inch, 4.0*inch, 460, 250, font_size=11)
+    report_title(c,'Note:',1.07*inch, 3.5*inch,'darkgreen',font_size=12)
+    report_context(c,section1_page1_3, 1.0*inch, 1.8*inch, 460, 120, font_size=11)
     report_todaypage(c,55,30,"Created on: " + today)
     report_todaypage(c,270,30,"Page " + lst_pagenumber[0] + " of "+ lastpage)
     c.showPage()
@@ -1722,7 +1772,7 @@ def annexB(blo_table, blo_table_bymonth, lst_pagenumber=pagenumber_ava_annexB, l
     report_todaypage(c,270,30,"Page " + lst_pagenumber[1] + " of " + lastpage)
     c.showPage()
 
-def method(lst_pagenumber=pagenumber_ava_other, lastpage="47", today=date.today().strftime("%d %b %Y")):
+def method(lst_pagenumber=pagenumber_ava_other, lst_org=lst_org_format, lastpage="47", today=date.today().strftime("%d %b %Y")):
     ##paragraph variables
     iden1_op = "<para leftindent=\"35\">"
     iden2_op = "<para leftindent=\"70\">"
@@ -1812,15 +1862,15 @@ def method(lst_pagenumber=pagenumber_ava_other, lastpage="47", today=date.today(
     method_page3_4 = ["Then, save the file. For every time the user double−clicked AMASS.bat, the application would know that the variable named 'hn' is similar to 'hospital_number' and represents the patient identifier in the analysis."]
     ##Page4
     method_page4_1 = ["<b>" + "Organisms included for the AMR Surveillance Report:" + "</b>", 
-                    "− <i>Staphylococcus aureus</i>", 
-                    "− <i>Enterococcus</i> spp.", 
-                    "− <i>Streptococcus pneumoniae</i>", 
-                    "− <i>Salmonella</i> spp.", 
+                    "− " + lst_org[0], 
+                    "− " + lst_org[1], 
+                    "− " + lst_org[2], 
+                    "− " + lst_org[3], 
                     "The eight organisms and antibiotics included in the report were selected based on the global priority list of antibiotic resistant bacteria and Global Antimicrobial Resistance Surveillance System (GLASS) of WHO [1,2]."]
-    method_page4_2 = ["− <i>Escherichia coli</i>", 
-                    "− <i>Klebsiella pneumoniae</i>", 
-                    "− <i>Pseudomonas aeruginosa</i>", 
-                    "− <i>Acinetobacter</i> spp."]
+    method_page4_2 = ["− " + lst_org[4], 
+                    "− " + lst_org[5], 
+                    "− " + lst_org[6], 
+                    "− " + lst_org[7]]
     method_page4_5_1 = "<b>" + "Definitions:" + "</b>"
     method_page4_5_2 = "The definitions of infection origin proposed by the WHO GLASS was used [1]. In brief, community−origin bloodstream infection (BSI) was defined for patients in the hospital within the first two calendar days of admission when the first blood culture positive specimens were taken. " + \
                     "Hospital−origin BSI was defined for patients in the hospital longer than the first two calendar days of admission when the first blood culture positive specimens were taken. " + \

@@ -91,15 +91,23 @@ def assign_na_toinfo(str_info, coverpage=False):
 
 def prepare_unicode(str_unicode):
     result = ""
-    if len(str(str_unicode)) > 50:
-        if len(str(str_unicode)) < 100:
-            result = str(str_unicode)[:50] + "\n" + str(str_unicode)[50:]
-        elif len(str(str_unicode)) >= 100 and len(str(str_unicode)) < 150:
-            result = str(str_unicode)[:50] + "\n" + str(str_unicode)[50:100] + "\n" + str(str_unicode)[100:]
-        elif len(str(str_unicode)) >= 150 and len(str(str_unicode)) < 200:
-            result = str(str_unicode)[:50] + "\n" + str(str_unicode)[50:100] + "\n" + str(str_unicode)[100:150] + "\n" + str(str_unicode)[150:]
-        else:
-            result = str(str_unicode)[:50] + "\n" + str(str_unicode)[50:100] + "\n" + str(str_unicode)[100:150] + "\n" + str(str_unicode)[150:200] + "\n" + str(str_unicode)[200:]
+    if len(str(str_unicode)) > 40:
+        result = str(str_unicode)[:40]
     else:
         result = str(str_unicode)
     return result
+
+# def prepare_unicode(str_unicode):
+#     result = ""
+#     if len(str(str_unicode)) > 50:
+#         if len(str(str_unicode)) < 100:
+#             result = str(str_unicode)[:50] + "\n" + str(str_unicode)[50:]
+#         elif len(str(str_unicode)) >= 100 and len(str(str_unicode)) < 150:
+#             result = str(str_unicode)[:50] + "\n" + str(str_unicode)[50:100] + "\n" + str(str_unicode)[100:]
+#         elif len(str(str_unicode)) >= 150 and len(str(str_unicode)) < 200:
+#             result = str(str_unicode)[:50] + "\n" + str(str_unicode)[50:100] + "\n" + str(str_unicode)[100:150] + "\n" + str(str_unicode)[150:]
+#         else:
+#             result = str(str_unicode)[:50] + "\n" + str(str_unicode)[50:100] + "\n" + str(str_unicode)[100:150] + "\n" + str(str_unicode)[150:200] + "\n" + str(str_unicode)[200:]
+#     else:
+#         result = str(str_unicode)
+#     return result
